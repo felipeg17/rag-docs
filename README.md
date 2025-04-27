@@ -20,10 +20,6 @@ Asimismo, proporciona facilidad cognitiva al integrar el *LCEL* que permite simp
 
 Se abordó una solución basada en *self-awareness RAG* con *reranking*. 
 
-<p align="center">
-  <img src="resources/estudio_suelos_diagramas-rag_generico.drawio.png" alt="RAG" width="1000" height="auto">
-</p>
-
 Toda la arquitectura del RAG se encuentra incorporada en la  [clase Process Document](/app/procesar_documento/services/process_document.py).
 
 #### Ingesta de documento
