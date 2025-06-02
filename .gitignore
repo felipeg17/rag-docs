@@ -1,12 +1,18 @@
 # venv
 v_rag/
 
+#.env
+.env
+
 
 # files
-.env
 *.pdf
 *.pyc
-requirements_base.txt
-
+TODO.md
+USE.md
 
 # folders
+
+
+# git
+.gitignore

@@ -2,6 +2,7 @@ import os
 import logging
 import pdb
 import dotenv
+import base64
 
 from pathlib import Path
 from typing import Optional
@@ -28,7 +29,6 @@ from langchain.prompts import (
 # Documents processing
 import fitz
 from langchain.schema import Document
-from langchain_community.document_loaders import PyPDFLoader
 
 # Splitters
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -91,7 +91,11 @@ class ProcessDocument():
     
   def load_document(self) -> None:
     #* Convertir hex_string a bytes
-    self._document_bytes = unhexlify(self._document_bytes)
+    # self._document_bytes = unhexlify(self._document_bytes)
+
+    #* Convertir de base64 a bytes
+    self._document_bytes = base64.b64decode(self._document_bytes)
+
     #* Cargar documento pdf con normalidad
     self._document_pdf = fitz.open(
       stream=self._document_bytes,
@@ -366,7 +370,7 @@ class ProcessDocument():
     database: str="rag-database"
   ) -> chromadb.HttpClient: 
     #* Es necesario verificar si el tenant y la base de datos existen
-    db_host = os.getenv("HOST")
+    db_host = os.getenv("CHROMADB_HOST")
     db_port = os.getenv("CHROMADB_PORT")
     return chromadb.HttpClient(
       host=f"http://{db_host}:{db_port}",
@@ -393,9 +397,9 @@ class ProcessDocument():
     
 if __name__ == "__main__":
   DOCS_PATH = Path(__file__).parent 
-  folder_path = DOCS_PATH 
-  file_name = "Insurance_2030.pdf"
-  document_title = "Insurance 2030: The impact of AI on the future of insurance"
+  folder_path = DOCS_PATH / "documents"
+  file_name = "fl-taxes.pdf"
+  document_title = "Business Owners Taxes in Florida"
   file_path = str(folder_path / file_name)
   
   try:
@@ -406,7 +410,8 @@ if __name__ == "__main__":
   
   doc = ProcessDocument(
     query_id="1",
-    document_bytes=pdf_bytes.hex(),
+    document_bytes=base64.b64encode(pdf_bytes).decode('utf-8'),
+    # document_bytes=pdf_bytes.hex(),
     document_title=document_title
   )
   
@@ -414,33 +419,37 @@ if __name__ == "__main__":
   logging.info("Cargando servicios")
   doc.load_services()
   
+  pdb.set_trace()
+
   #* Procesar documento
   logging.info("Procesando documento")
   doc.load_document()
   doc.process_document()
+
+  pdb.set_trace()
   
 
-  #* Buscar en la vdb
-  # query = """
-  # What are the trends for IA in the insurance industry?
-  # """
-  # results = doc.get_results_from_vdb_search(
-  #   query=query,
-  #   k_results=4
-  # )
-  # for result in results:
-  #   print(f"Score:::{result[1]}")
-  #   print(f"Metadata:::{result[0].metadata}")
-  #   print(f"Texto:::{result[0].page_content}")
-  #   print("-"*50)
-  #   print("\n\n")
+  # * Buscar en la vdb
+  query = """
+  What are communication service tax rates?
+  """
+  results = doc.get_results_from_vdb_search(
+    query=query,
+    k_results=4
+  )
+  for result in results:
+    print(f"Score:::{result[1]}")
+    print(f"Metadata:::{result[0].metadata}")
+    print(f"Texto:::{result[0].page_content}")
+    print("-"*50)
+    print("\n\n")
   
-  # pdb.set_trace()
+  pdb.set_trace()
   
   #* Respuesta por RAG con cadena de QA sin salida estructurada
-  query = """
-  How AI is going to affect claims?
-  """
+  # query = """
+  # How AI is going to affect claims?
+  # """
   answer_qa = doc.get_answer_from_rag_qa(
     query=query,
     k_results=6
