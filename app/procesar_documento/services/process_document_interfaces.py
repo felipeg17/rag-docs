@@ -39,10 +39,10 @@ class ProcessDocumentInterface():
     #* Procesar documento
     logging.info("Procesando documento")
     rag_document.load_document()
-    estatus_process = rag_document.process_document()
+    status_process = rag_document.process_document()
     self._finish_time = time.time()
     
-    return estatus_process
+    return status_process
   
 class SearchVectorDataBaseInterface():
   def __init__(

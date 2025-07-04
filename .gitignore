@@ -12,7 +12,11 @@ TODO.md
 USE.md
 
 # folders
+__pycache__/
+documents/
 
 
 # git
 .gitignore
+
+

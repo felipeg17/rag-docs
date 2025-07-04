@@ -295,7 +295,7 @@ class ProcessDocument():
   
   def delete_document_from_vdb(self, title: str) -> bool:
     if not title:
-      logging.error("Numero de ciro no proporcionado")
+      logging.error("Titulo no proporcionado")
       return False
     document_results = self._chroma_vdb.get(
       where={

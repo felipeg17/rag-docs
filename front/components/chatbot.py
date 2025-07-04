@@ -19,7 +19,7 @@ def show():
   query_text = st.text_input("Ingrese la pregunta al documento")
   
   if st.button("Preguntar al PDF", key="procesar"): 
-    url = f"http://{os.getenv('HOST')}:8107/"
+    url = f"http://{os.getenv('API_HOST')}:{os.getenv('API_PORT')}/"
     endpoint = "rag-docs/api/v1/cadena_rankeada"
     with st.spinner("Procesando pregunta..."):
       payload = {

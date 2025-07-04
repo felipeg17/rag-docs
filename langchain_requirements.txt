@@ -1,7 +1,7 @@
 chroma-hnswlib==0.7.3
 chromadb==1.0.12
 cohere==5.13.11
-fastapi==0.115.8
+fastapi==0.115.9
 httpcore==1.0.7
 httptools==0.6.4
 httpx==0.27.2
@@ -25,6 +25,7 @@ python-dotenv==1.0.1
 PyYAML==6.0.2
 requests==2.32.3
 starlette==0.45.3
+streamlit==1.41.1
 tiktoken==0.8.0
 tokenizers==0.21.0
 uvicorn==0.34.0
