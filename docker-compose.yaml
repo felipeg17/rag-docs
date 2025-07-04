@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  rag-docs-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fastapi/rag-docs-ms:0.0.1
+    container_name: rag-docs-ms_0.0.1
+    network_mode: "host"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/ms
+    restart: unless-stopped
+
+  rag-docs-frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    image: streamlit/rag-docs-frontend:0.0.1
+    container_name: rag-docs-frontend
+    network_mode: "host"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - rag-docs-api

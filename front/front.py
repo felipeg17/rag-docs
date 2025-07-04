@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
 
-from front.pages import qa_pdf, chatbot
+from components import qa_pdf, chatbot
 
 PATH = Path(__file__).resolve().parent
 

@@ -20,13 +20,14 @@ def show():
     document_type = "documento-pdf"
     
     if st.button("Cargar documento", key="procesar"): 
-      url = f"http://{os.getenv('HOST')}:8107/"
+      url = f"http://{os.getenv('API_HOST')}:{os.getenv('API_PORT')}/"
       endpoint = "rag-docs/api/v1/documento"
       with st.spinner("Procesando documento..."):
         payload = {
           "title": document_title,
           "document_type": document_type,
-          "document_bytes": pdf_bytes.hex()
+          # "document_bytes": pdf_bytes.hex()
+          "document_bytes": base64.b64encode(pdf_bytes).decode('utf-8')
         }
 
         headers = {"Content-Type": "application/json"}

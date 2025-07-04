@@ -2,6 +2,7 @@ import os
 import logging
 import pdb
 import dotenv
+import base64
 
 from pathlib import Path
 from typing import Optional
@@ -28,7 +29,6 @@ from langchain.prompts import (
 # Documents processing
 import fitz
 from langchain.schema import Document
-from langchain_community.document_loaders import PyPDFLoader
 
 # Splitters
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -91,7 +91,11 @@ class ProcessDocument():
     
   def load_document(self) -> None:
     #* Convertir hex_string a bytes
-    self._document_bytes = unhexlify(self._document_bytes)
+    # self._document_bytes = unhexlify(self._document_bytes)
+
+    #* Convertir de base64 a bytes
+    self._document_bytes = base64.b64decode(self._document_bytes)
+
     #* Cargar documento pdf con normalidad
     self._document_pdf = fitz.open(
       stream=self._document_bytes,
@@ -160,7 +164,7 @@ class ProcessDocument():
       filter=metadata_filter,
       where_document={"$contains": " "}
     )
-    # pdb.set_trace()
+    
     return results
   
   @traceable
@@ -347,7 +351,7 @@ class ProcessDocument():
     database: str="rag-database"
   ) -> chromadb.HttpClient: 
     #* Es necesario verificar si el tenant y la base de datos existen
-    db_host = os.getenv("HOST")
+    db_host = os.getenv("CHROMADB_HOST")
     db_port = os.getenv("CHROMADB_PORT")
     return chromadb.HttpClient(
       host=f"http://{db_host}:{db_port}",

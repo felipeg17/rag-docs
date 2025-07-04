@@ -13,14 +13,14 @@ logging.basicConfig(
   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
+#! IMPORTANTE: ultima version de chromadb http - api/v2 unicamente
 
 # Parametros
-db_host = os.getenv("HOST")
+db_host = os.getenv("CHROMADB_HOST")
 db_port = os.getenv("CHROMADB_PORT")
-tenant = "dev"
+tenant = "stage"
 database = "rag-database"
 collection_name = "rag-docs"
-
 
 settings = chromadb.Settings(
   chroma_api_impl="chromadb.api.fastapi.FastAPI",
@@ -29,30 +29,37 @@ settings = chromadb.Settings(
   allow_reset = True
 )
 
-#admin
+#  admin
 admin_client = chromadb.AdminClient(settings=settings)
 
 try:
-  # admin_client.create_tenant(name=tenant)
+  # Creacion tenant
+  admin_client.create_tenant(name=tenant)
+  logging.info(f"Tenant '{tenant}' created successfully.")
+  
+  # Creacion database
   admin_client.create_database(tenant=tenant, name=database)	
+  logging.info(f"Database '{database}' created successfully.")
+
 except Exception as e:
-  print(e)
-  pass
+  logging.error(f"Error creating tenant or database: {e}")
+
+
+# Revisar tenant y database
+tenant_name = admin_client.get_tenant(name=tenant)
+database_name = admin_client.get_database(tenant=tenant, name=database)
+logging.info(f"Tenant: {tenant_name}, Database: {database_name}")
 pdb.set_trace()
 
-# tenant_name = admin_client.get_tenant(name=tenant)
-# database_name = admin_client.get_database(tenant=tenant, name=database)
-# pdb.set_trace()
-
-# cliente
+# Crear cliente
 chroma_client = chromadb.HttpClient(
   host=f"http://{db_host}:{db_port}",
   tenant=tenant,
   database=database,
 )
-pdb.set_trace()
 
-# chroma_client.list_collections()
 
+# Crear coleccion
 collection = chroma_client.create_collection(name=collection_name)
+logging.info(f"Collections: {chroma_client.list_collections()}")
 pdb.set_trace()
