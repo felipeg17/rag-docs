@@ -2,8 +2,10 @@ FROM python:3.10-slim
 
 USER root
 
+RUN pip install --no-cache-dir uv
+
 COPY requirements.txt .
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --system -r requirements.txt
 
 WORKDIR /ms
 COPY app /ms/app

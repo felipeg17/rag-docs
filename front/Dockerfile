@@ -2,9 +2,11 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+RUN pip install --no-cache-dir uv
+
 # Crear requirements específicos para frontend
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --system -r requirements.txt
 
 # Copiar código del frontend
 COPY . /app/
