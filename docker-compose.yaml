@@ -13,6 +13,8 @@ services:
     environment:
       - PYTHONPATH=/ms
     restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.0
 
   rag-docs-frontend:
     build:
@@ -26,3 +28,5 @@ services:
     restart: unless-stopped
     depends_on:
       - rag-docs-api
+    mem_limit: 1g
+    cpus: 1.0
