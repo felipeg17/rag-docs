@@ -10,10 +10,14 @@ v_rag/
 *.pyc
 TODO.md
 USE.md
+test_bedrock.py
+test_langsmith.py
+
 
 # folders
 __pycache__/
 documents/
+.mypy_cache/
 
 
 # git
