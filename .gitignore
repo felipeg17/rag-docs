@@ -18,6 +18,7 @@ test_langsmith.py
 __pycache__/
 documents/
 .mypy_cache/
+.ruff_cache/
 
 
 # git
