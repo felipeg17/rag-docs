@@ -9,10 +9,11 @@ from typing import Optional
 from binascii import unhexlify
 
 # Langchain controls
-from langchain.globals import set_debug
+# from langchain.globals import set_debug
 
 # llm model
 from langchain_openai import ChatOpenAI
+from langchain_aws import ChatBedrockConverse
 
 # Vector database
 from langchain_chroma import Chroma
@@ -53,7 +54,7 @@ from langsmith import traceable
 # Cargar variables de entorno
 dotenv.load_dotenv()
 # Modo debug verbose para langchain
-set_debug(False)
+# set_debug(False)
 
 # Configuracion de logging
 logging.basicConfig(
@@ -200,6 +201,7 @@ class ProcessDocument():
       1. Answer the following question based on the information
       2. Do not include unsolicited information, do not make up data, do not 
       include recommendations outside of the provided context.
+      3. Be very concise in your answer, do not include unnecessary information.
 
     Context:
     {context}
@@ -260,6 +262,7 @@ class ProcessDocument():
       1. Answer the following question based on the information
       2. Do not include unsolicited information, do not make up data, do not 
       include recommendations outside of the provided context.
+      3. Be very concise in your answer, do not include unnecessary information.
 
     Context:
     {context}
@@ -338,20 +341,32 @@ class ProcessDocument():
     modelo: str="gpt-4o-mini", 
     model_params: dict=None, 
   ):
-    model_params = model_params or {
-      "model_name": "gpt-4o-mini",
-      "api_version": "2023-05-15",
-      "temperature": 0.05, 
-      "max_tokens": 4000,
-      "top_p": 0.95,
-    }
+    # model_params = model_params or {
+    #   "model_name": "gpt-4o-mini",
+    #   "api_version": "2023-05-15",
+    #   "temperature": 0.05, 
+    #   "max_tokens": 4000,
+    #   "top_p": 0.95,
+    # }
     
-    return ChatOpenAI(
-      model=modelo,
-      api_key=os.environ.get('OPENAI_API_KEY'),
-      temperature=model_params["temperature"],
-      max_tokens=model_params["max_tokens"],
-      top_p=model_params["top_p"]
+    # return ChatOpenAI(
+    #   model=modelo,
+    #   api_key=os.environ.get('OPENAI_API_KEY'),
+    #   temperature=model_params["temperature"],
+    #   max_tokens=model_params["max_tokens"],
+    #   top_p=model_params["top_p"]
+    # )
+    #! Cuando se isa el arn del modelo es necesario agregar el provider
+    #! revisar la seccion de cross-inference region y obtener el profile ARN
+    return ChatBedrockConverse(
+      model_id="arn:aws:bedrock:us-east-1:008319781255:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      provider="anthropic",
+      temperature=0.1,
+      top_p=0.9,
+      max_tokens=4000,
+      aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+      aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+      region_name=os.environ.get('AWS_REGION', 'us-west-1')
     )
     
   def _load_embeddings_service(
@@ -422,48 +437,48 @@ if __name__ == "__main__":
   pdb.set_trace()
 
   #* Procesar documento
-  logging.info("Procesando documento")
-  doc.load_document()
-  doc.process_document()
+  # logging.info("Procesando documento")
+  # doc.load_document()
+  # doc.process_document()
 
-  pdb.set_trace()
+  # pdb.set_trace()
   
 
   # * Buscar en la vdb
   query = """
   What are communication service tax rates?
   """
-  results = doc.get_results_from_vdb_search(
-    query=query,
-    k_results=4
-  )
-  for result in results:
-    print(f"Score:::{result[1]}")
-    print(f"Metadata:::{result[0].metadata}")
-    print(f"Texto:::{result[0].page_content}")
-    print("-"*50)
-    print("\n\n")
+  # results = doc.get_results_from_vdb_search(
+  #   query=query,
+  #   k_results=4
+  # )
+  # for result in results:
+  #   print(f"Score:::{result[1]}")
+  #   print(f"Metadata:::{result[0].metadata}")
+  #   print(f"Texto:::{result[0].page_content}")
+  #   print("-"*50)
+  #   print("\n\n")
   
-  pdb.set_trace()
+  # pdb.set_trace()
   
   #* Respuesta por RAG con cadena de QA sin salida estructurada
   # query = """
   # How AI is going to affect claims?
   # """
-  answer_qa = doc.get_answer_from_rag_qa(
-    query=query,
-    k_results=6
-  )
-  for key, value in answer_qa.items():
-    print("-"*50)
-    print(f"{key}:::{value}")
+  # answer_qa = doc.get_answer_from_rag_qa(
+  #   query=query,
+  #   k_results=4
+  # )
+  # for key, value in answer_qa.items():
+  #   print("-"*50)
+  #   print(f"{key}:::{value}")
     
-  pdb.set_trace()
+  # pdb.set_trace()
   
   #* Respuesta por RAG con reranking sin salida estructurada
   answer_re = doc.get_reranked_results(
     query=query,
-    k_results=6
+    k_results=2
   )
   print(f"Answer:::{answer_re}")
   

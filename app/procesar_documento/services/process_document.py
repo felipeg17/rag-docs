@@ -324,7 +324,7 @@ class ProcessDocument():
       "api_version": "2023-05-15",
       "temperature": 0.05, 
       "max_tokens": 4000,
-      "top_p": 0.95,
+      "top_p": 0.1,
     }
     
     return ChatOpenAI(
