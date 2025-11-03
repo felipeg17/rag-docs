@@ -1,14 +1,12 @@
-import os
-import logging
-import pdb
-import dotenv
-
 from datetime import datetime, timedelta
+import os
+import pdb
 
-import pandas as pd
+import dotenv
 
 # Tracing
 from langsmith import Client
+import pandas as pd
 
 
 # Cargar variables de entorno
