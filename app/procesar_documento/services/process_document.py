@@ -1,11 +1,14 @@
 import base64
 import os
+from typing import Union
 
 import chromadb
+from chromadb.api import ClientAPI
 import dotenv
 
 # Documents processing
-import fitz  #! https://pymupdf.readthedocs.io/en/latest/tutorial.html
+#! https://pymupdf.readthedocs.io/en/latest/tutorial.html
+import fitz  # type: ignore
 
 # Chains
 from langchain.chains.retrieval_qa.base import RetrievalQA
@@ -96,6 +99,7 @@ class ProcessDocument:
             logger.info(f"Documento {self._document_title} ya existe vdb")
             return False
 
+        self._text_splitter: Union[SemanticChunker, RecursiveCharacterTextSplitter]
         if splitting_method == "semantic":
             self._text_splitter = SemanticChunker(
                 embeddings=self._embeddings_service,
@@ -282,7 +286,7 @@ class ProcessDocument:
         self,
         modelo: str = "gpt-4o-mini",
         model_params: dict = {},
-    ):
+    ) -> ChatOpenAI:
         model_params = model_params or {
             "model_name": "gpt-4o-mini",
             "api_version": "2023-05-15",
@@ -307,9 +311,7 @@ class ProcessDocument:
                 model=embeddings_model, api_key=SecretStr(os.getenv("OPENAI_API_KEY", ""))
             )
 
-    def _load_chroma_client(
-        self, tenant: str = "dev", database: str = "rag-database"
-    ) -> chromadb.HttpClient:
+    def _load_chroma_client(self, tenant: str = "dev", database: str = "rag-database") -> ClientAPI:
         # * Es necesario verificar si el tenant y la base de datos existen
         db_host = os.getenv("CHROMADB_HOST")
         db_port = os.getenv("CHROMADB_PORT")
