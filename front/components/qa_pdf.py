@@ -1,11 +1,10 @@
-import os
-import requests
 import base64
-import dotenv
-import time
+import os
 
-from pathlib import Path
+import dotenv
+import requests
 import streamlit as st
+
 
 # Cargar variables de entorno
 dotenv.load_dotenv()
@@ -27,7 +26,7 @@ def show():
                     "title": document_title,
                     "document_type": document_type,
                     # "document_bytes": pdf_bytes.hex()
-                    "document_bytes": base64.b64encode(pdf_bytes).decode("utf-8"),
+                    "document_chain": base64.b64encode(pdf_bytes).decode("utf-8"),
                 }
 
                 headers = {"Content-Type": "application/json"}

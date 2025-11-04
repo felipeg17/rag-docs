@@ -1,7 +1,7 @@
-import streamlit as st
 from pathlib import Path
 
-from components import qa_pdf, chatbot
+from components import chatbot, qa_pdf
+import streamlit as st
 
 
 PATH = Path(__file__).resolve().parent

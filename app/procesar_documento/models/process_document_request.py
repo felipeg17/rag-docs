@@ -4,15 +4,11 @@ from pydantic import BaseModel, Field
 
 
 class ProcessDocumentRequest(BaseModel):
-    title: str = Field(
-        default=None,
-    )
+    title: str
     document_type: Optional[str] = Field(
         default="documento-pdf",
     )
-    document_chain: str = Field(
-        default=None,
-    )
+    document_chain: str
 
 
 class SearchVectorDataBaseRequest(BaseModel):

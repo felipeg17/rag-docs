@@ -1,4 +1,3 @@
-import pdb
 import uuid
 
 from fastapi import APIRouter, HTTPException, status

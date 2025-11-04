@@ -38,6 +38,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 # Tracing
 from langsmith import traceable
+from pydantic import SecretStr
 
 from app.utils import logger
 
@@ -169,9 +170,9 @@ class ProcessDocument:
     You are an assistant specialized in answering questions about documents.
     Your task is to use the information provided in the context to answer
     the question.
-    Instructions: 
+    Instructions:
       1. Answer the following question based on the information
-      2. Do not include unsolicited information, do not make up data, do not 
+      2. Do not include unsolicited information, do not make up data, do not
       include recommendations outside of the provided context.
 
     Context:
@@ -223,9 +224,9 @@ class ProcessDocument:
     You are an assistant specialized in answering questions about documents.
     Your task is to use the information provided in the context to answer
     the question.
-    Instructions: 
+    Instructions:
       1. Answer the following question based on the information
-      2. Do not include unsolicited information, do not make up data, do not 
+      2. Do not include unsolicited information, do not make up data, do not
       include recommendations outside of the provided context.
 
     Context:
@@ -252,7 +253,7 @@ class ProcessDocument:
             return False
 
         document_results = self._chroma_vdb.get(
-            where={"titulo": {"$eq": title}},
+            where={"titulo": title},
         )
         return bool(document_results.get("ids"))
 
@@ -292,7 +293,7 @@ class ProcessDocument:
 
         return ChatOpenAI(
             model=modelo,
-            api_key=os.environ.get("OPENAI_API_KEY"),
+            api_key=SecretStr(os.getenv("OPENAI_API_KEY", "")),
             temperature=model_params["temperature"],
             max_tokens=model_params["max_tokens"],
             top_p=model_params["top_p"],
@@ -303,7 +304,7 @@ class ProcessDocument:
     ) -> None:
         if embeddings_model == "text-embedding-ada-002":
             self._embeddings_service = OpenAIEmbeddings(
-                model=embeddings_model, api_key=os.environ.get("OPENAI_API_KEY")
+                model=embeddings_model, api_key=SecretStr(os.getenv("OPENAI_API_KEY", ""))
             )
 
     def _load_chroma_client(
