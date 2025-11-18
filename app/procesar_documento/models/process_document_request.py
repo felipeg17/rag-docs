@@ -8,6 +8,7 @@ class ProcessDocumentRequest(BaseModel):
     document_type: Optional[str] = Field(
         default="documento-pdf",
     )
+    # The actual text encoded in base64
     document_chain: str
 
 

@@ -130,13 +130,19 @@ class ProcessDocument:
         return True
 
     def get_results_from_vdb_search(
-        self, query: str = "", k_results: int = 4, metadata_filter: dict = {}
+        self,
+        query: str | None = None,
+        k_results: int | None = None,
+        metadata_filter: dict | None = None,
     ) -> list:
         results = []
         if not query:
             query = """
       Describe the main idea of the document
       """
+
+        if k_results is None:
+            k_results = 4
 
         if not metadata_filter:
             metadata_filter = {"tipo-documento": self._document_type}
@@ -151,11 +157,16 @@ class ProcessDocument:
         return results
 
     @traceable
-    def get_answer_from_rag_qa(self, query: str = "", k_results: int = 4) -> dict:
+    def get_answer_from_rag_qa(
+        self, query: str | None = None, k_results: int | None = None
+    ) -> dict:
         if not query:
             query = """
       Describe the main idea of the document
       """
+
+        if k_results is None:
+            k_results = 4
 
         # * Creacion del retriever
         self._retriever = self._chroma_vdb.as_retriever(
@@ -201,11 +212,14 @@ class ProcessDocument:
         return answer
 
     @traceable
-    def get_reranked_results(self, query: str = "", k_results: int = 4) -> str:
+    def get_reranked_results(self, query: str | None = None, k_results: int | None = None) -> str:
         if not query:
             query = """
       Describe the main idea of the document
       """
+
+        if k_results is None:
+            k_results = 4
 
         self._retriever = self._chroma_vdb.as_retriever(
             search_type="similarity",
@@ -252,7 +266,7 @@ class ProcessDocument:
 
         return answer
 
-    def check_document_in_vdb(self, title: str) -> bool:
+    def check_document_in_vdb(self, title: str | None) -> bool:
         if not title:
             return False
 
