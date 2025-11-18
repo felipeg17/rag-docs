@@ -1,5 +1,5 @@
-import pdb
 import time
+from typing import Any
 
 import dotenv
 
@@ -15,7 +15,7 @@ from app.utils import logger
 dotenv.load_dotenv()
 
 
-class ProcessDocumentInterface:
+class ProcessDocumentHandler:
     def __init__(self, query_id: str, input_data: ProcessDocumentRequest):
         self.query_id = query_id
         self.input_data = input_data
@@ -28,7 +28,7 @@ class ProcessDocumentInterface:
             query_id=self.query_id,
             document_chain=self.input_data.document_chain,
             document_title=self.input_data.title,
-            document_type=self.input_data.document_type,
+            document_type=self.input_data.document_type or "documento-pdf",
         )
 
         # * Cargar servicios
@@ -44,10 +44,10 @@ class ProcessDocumentInterface:
         return status_process
 
 
-class SearchVectorDataBaseInterface:
+class SearchVectorDataBaseHandler:
     def __init__(self, input_data: SearchVectorDataBaseRequest):
         self._input_data = input_data
-        self._query_vdb_response = {"results": []}
+        self._query_vdb_response: dict[str, Any] = {"results": []}
 
     @property
     def query_vdb_response(self) -> dict:
@@ -56,8 +56,8 @@ class SearchVectorDataBaseInterface:
     def search_vdb(self) -> None:
         rag_document = ProcessDocument(
             query_id="",
-            document_title=self._input_data.title,
-            document_type=self._input_data.document_type,
+            document_title=self._input_data.title or "",
+            document_type=self._input_data.document_type or "documento-pdf",
         )
 
         # * Cargar servicios
@@ -89,10 +89,10 @@ class SearchVectorDataBaseInterface:
         self._query_vdb_response["results"] = result_vdb
 
 
-class QueryQAChainInterface(SearchVectorDataBaseInterface):
+class QueryQAChainHandler(SearchVectorDataBaseHandler):
     def __init__(self, input_data: SearchVectorDataBaseRequest):
         super().__init__(input_data=input_data)
-        self._query_qa_chain_response = {
+        self._query_qa_chain_response: dict[str, Any] = {
             "query": None,
             "result": None,
             "source_documents": [],
@@ -105,8 +105,8 @@ class QueryQAChainInterface(SearchVectorDataBaseInterface):
     def query_qa_chain(self) -> None:
         rag_document = ProcessDocument(
             query_id="",
-            document_title=self._input_data.title,
-            document_type=self._input_data.document_type,
+            document_title=self._input_data.title or "",
+            document_type=self._input_data.document_type or "documento-pdf",
         )
 
         # * Cargar servicios
@@ -137,7 +137,7 @@ class QueryQAChainInterface(SearchVectorDataBaseInterface):
         ]
 
 
-class QueryRerankChainInterface(QueryQAChainInterface):
+class QueryRerankChainHandler(QueryQAChainHandler):
     def __init__(self, input_data: SearchVectorDataBaseRequest):
         super().__init__(input_data=input_data)
         self._query_rerank_chain_response = {
@@ -152,8 +152,8 @@ class QueryRerankChainInterface(QueryQAChainInterface):
     def query_rerank_chain(self) -> None:
         rag_document = ProcessDocument(
             query_id="",
-            document_title=self._input_data.title,
-            document_type=self._input_data.document_type,
+            document_title=self._input_data.title or "",
+            document_type=self._input_data.document_type or "documento-pdf",
         )
 
         # * Cargar servicios
