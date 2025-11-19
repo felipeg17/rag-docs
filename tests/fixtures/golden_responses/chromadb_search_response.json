@@ -1,0 +1,48 @@
+{
+  "description": "ChromaDB similarity search results for test query",
+  "recorded_at": "2025-01-17T00:00:00Z",
+  "input": {
+    "query": "What is the main topic of this document?",
+    "k_results": 4,
+    "collection": "rag-docs",
+    "filter": {"tipo-documento": "documento-pdf"}
+  },
+  "results": [
+    {
+      "page_content": "This document provides an introduction to testing strategies for RAG applications. It covers unit testing, integration testing, and best practices for mocking external services.",
+      "metadata": {
+        "titulo": "test_document",
+        "tipo-documento": "documento-pdf",
+        "pagina": 0
+      },
+      "score": 0.892
+    },
+    {
+      "page_content": "Unit testing is essential for maintaining code quality. When testing RAG systems, it's important to mock LLM responses and use golden fixtures for deterministic results.",
+      "metadata": {
+        "titulo": "test_document",
+        "tipo-documento": "documento-pdf",
+        "pagina": 1
+      },
+      "score": 0.845
+    },
+    {
+      "page_content": "Vector databases like ChromaDB can be tested using pre-recorded search results. This approach ensures tests are fast and don't require external API calls.",
+      "metadata": {
+        "titulo": "test_document",
+        "tipo-documento": "documento-pdf",
+        "pagina": 2
+      },
+      "score": 0.823
+    },
+    {
+      "page_content": "Integration testing with tools like Behave and Cucumber can complement unit tests by verifying end-to-end workflows and business requirements.",
+      "metadata": {
+        "titulo": "test_document",
+        "tipo-documento": "documento-pdf",
+        "pagina": 3
+      },
+      "score": 0.801
+    }
+  ]
+}

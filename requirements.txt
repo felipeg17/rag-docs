@@ -114,6 +114,8 @@ pymupdf==1.23.26
 pymupdfb==1.23.22
 pypika==0.48.9
 pyproject-hooks==1.2.0
+pytest==8.3.4
+pytest-mock==3.14.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2025.2
@@ -162,3 +164,4 @@ wrapt==1.17.2
 yarl==1.20.0
 zipp==3.22.0
 zstandard==0.23.0
+
