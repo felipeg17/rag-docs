@@ -1,9 +1,17 @@
-# app/core/dependencies.py
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
 
 from app.core.config import Settings, settings
+from app.infrastructure.embeddings.client import EmbeddingsClient
+from app.infrastructure.llm.client import LLMClient
+from app.infrastructure.vector_db.chroma_client import ChromaDBClient
+from app.infrastructure.vector_db.repository import VectorDBRepository
+from app.services.document.text_splitter import TextSplitterFactory
+from app.services.ingest.ingestion import DocumentIngestionService
+from app.services.rag.qa_service import QAService
+from app.services.rag.rerank_service import RerankService
 
 
 # ============================================================================
@@ -17,42 +25,88 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 
 # ============================================================================
-# Infrastructure Dependencies (Singletons)
+# Infrastructure Dependencies
 # ============================================================================
-# NOTE: These will be implemented in Phase 2
-# For now, just define the signatures
+@lru_cache()
+def get_llm_client() -> LLMClient:
+    """Get LLM client"""
+    return LLMClient(settings)
 
-# @lru_cache()
-# def get_llm_client(settings: SettingsDep) -> LLMClient:
-#     """Get LLM client (singleton)."""
-#     return LLMClient(settings)
 
-# @lru_cache()
-# def get_embeddings_client(settings: SettingsDep) -> EmbeddingsClient:
-#     """Get embeddings client (singleton)."""
-#     return EmbeddingsClient(settings)
+@lru_cache()
+def get_embeddings_client() -> EmbeddingsClient:
+    """Get embeddings client"""
+    return EmbeddingsClient(settings)
 
-# @lru_cache()
-# def get_chroma_client(settings: SettingsDep) -> ChromaClient:
-#     """Get ChromaDB client (singleton)."""
-#     return ChromaClient(settings)
+
+@lru_cache()
+def get_chroma_client() -> ChromaDBClient:
+    """Get ChromaDB HTTP client"""
+    return ChromaDBClient(settings)
+
+
+@lru_cache()
+def get_vector_db_repository(
+    chroma_client: Annotated[ChromaDBClient, Depends(get_chroma_client)],
+    embeddings_client: Annotated[EmbeddingsClient, Depends(get_embeddings_client)],
+) -> VectorDBRepository:
+    """Get vector database repository"""
+    return VectorDBRepository(settings, chroma_client, embeddings_client)
+
+
+# Type aliases for dependency injection
+LLMClientDep = Annotated[LLMClient, Depends(get_llm_client)]
+EmbeddingsClientDep = Annotated[EmbeddingsClient, Depends(get_embeddings_client)]
+ChromaClientDep = Annotated[ChromaDBClient, Depends(get_chroma_client)]
+VectorDBDep = Annotated[VectorDBRepository, Depends(get_vector_db_repository)]
 
 
 # ============================================================================
 # Service Dependencies (Request-scoped)
 # ============================================================================
-# NOTE: These will be implemented in Phase 3
-# For now, just define the signatures
+def get_splitter_factory(
+    embeddings_client: EmbeddingsClientDep,
+) -> TextSplitterFactory:
+    """Get text splitter factory."""
+    return TextSplitterFactory(settings, embeddings_client.client)
 
-# def get_vector_db_repository(
-#     chroma_client: ChromaClient = Depends(get_chroma_client),
-#     embeddings_client: EmbeddingsClient = Depends(get_embeddings_client),
-# ) -> VectorDBRepository:
-#     """Get VectorDB repository."""
-#     return VectorDBRepository(chroma_client, embeddings_client)
 
-# def get_ingestion_service(
-#     vdb_repo: VectorDBRepository = Depends(get_vector_db_repository),
-# ) -> IngestionService:
-#     """Get document ingestion service."""
-#     return IngestionService(vdb_repo)
+def get_ingestion_service(
+    vdb_repo: VectorDBDep,
+    splitter_factory: Annotated[TextSplitterFactory, Depends(get_splitter_factory)],
+) -> DocumentIngestionService:
+    """Get document ingestion service."""
+    return DocumentIngestionService(vdb_repo, splitter_factory)
+
+
+# Type aliases
+SplitterFactoryDep = Annotated[TextSplitterFactory, Depends(get_splitter_factory)]
+IngestionServiceDep = Annotated[DocumentIngestionService, Depends(get_ingestion_service)]
+
+
+# ============================================================================
+# RAG Query Services
+# ============================================================================
+def get_qa_service(
+    llm_client: LLMClientDep,
+    vdb_repo: VectorDBDep,
+) -> QAService:
+    """Get standard QA service."""
+    from app.services.rag.qa_service import QAService
+
+    return QAService(settings, llm_client, vdb_repo)
+
+
+def get_rerank_service(
+    llm_client: LLMClientDep,
+    vdb_repo: VectorDBDep,
+) -> RerankService:
+    """Get rerank QA service."""
+    from app.services.rag.rerank_service import RerankService
+
+    return RerankService(settings, llm_client, vdb_repo)
+
+
+# Type aliases
+QAServiceDep = Annotated[QAService, Depends(get_qa_service)]
+RerankServiceDep = Annotated[RerankService, Depends(get_rerank_service)]
