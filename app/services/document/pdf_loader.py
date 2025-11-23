@@ -1,5 +1,7 @@
 import base64
 
+# TODO: Check the most recent way of use PyMUPDF
+# #! https://pymupdf.readthedocs.io/en/latest/tutorial.html
 import fitz  # type: ignore
 
 from app.utils.logger import logger
