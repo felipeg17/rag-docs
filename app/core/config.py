@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -32,16 +34,12 @@ class Settings(BaseSettings):
     cohere_model: str = Field(default="rerank-v3.5")
     cohere_api_key: str = Field(env="COHERE_API_KEY")  # type: ignore[call-overload]
 
-    # Observability
-    langchain_project: str = Field(default="rag-docs", env="LANGCHAIN_PROJECT")  # type: ignore[call-overload]
-    langsmith_tracing: bool = Field(default=True)
-
     # Application
     app_host: str = Field(default="0.0.0.0", env="HOST")  # type: ignore[call-overload]
     app_port: int = Field(default=8106)
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(Path(__file__).parent.parent.parent / ".env"),
         case_sensitive=False,
         extra="ignore",
     )
