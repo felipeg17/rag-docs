@@ -1,8 +1,10 @@
-import chromadb
-import pdb
-import dotenv
 import logging
 import os
+import pdb
+
+import chromadb
+import dotenv
+
 
 # Cargar variables de entorno
 dotenv.load_dotenv()
