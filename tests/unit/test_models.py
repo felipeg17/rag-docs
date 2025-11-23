@@ -19,6 +19,7 @@ from app.procesar_documento.models.process_document_request import (
 # ProcessDocumentRequest Tests
 # ============================================================================
 
+
 class TestProcessDocumentRequest:
     """Test ProcessDocumentRequest model validation."""
 
@@ -100,6 +101,7 @@ class TestProcessDocumentRequest:
 # ============================================================================
 # SearchVectorDataBaseRequest Tests
 # ============================================================================
+
 
 class TestSearchVectorDataBaseRequest:
     """Test SearchVectorDataBaseRequest model validation."""
