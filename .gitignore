@@ -9,12 +9,9 @@ v_rag/
 
 
 # files
-*.pdf
 *.pyc
-TODO.md
 USE.md
 test_bedrock.py
-test_langsmith.py
 
 
 # folders
