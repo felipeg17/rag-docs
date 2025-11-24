@@ -1,33 +1,37 @@
 {
-  "description": "Cohere rerank-v3.5 reranking results for test query",
-  "generated_at": "2025-11-23T12:29:12.311584",
+  "description": "Complete rerank QA response (reranking + LLM answer) for test query",
+  "generated_at": "2025-11-23T13:09:59.038013",
   "settings": {
-    "model": "rerank-v3.5",
+    "model": "gpt-4o-mini",
+    "temperature": 0.05,
+    "max_tokens": 4000,
+    "top_p": 0.1,
+    "cohere_model": "rerank-v3.5",
     "query": "What is ROS and what is it used for?",
+    "document_title": "ros-intro",
     "initial_k_results": 4,
-    "rerank_top_n": 3,
-    "document_title": "ros-intro"
+    "rerank_top_n": 3
   },
   "input": {
     "query": "What is ROS and what is it used for?",
-    "documents_count": 4,
-    "top_n": 3
+    "initial_documents_count": 4,
+    "reranked_documents_count": 3
   },
   "reranked_documents": [
     {
       "page_content": "Getting Started with Robot Operating System (ROS)”\n1. What is ROS?\nFor someone completely new to ROS, the best way to think about it is a collection of tools and frameworks\nwhich make automating robotics projects much easier. Every ROS project has a certain structure which you\nhave to follow. Your job would be to fill in the automation code along defining how the different parts of your\ncode are communicating with one another. Once this is done, the underlying ROS framework takes care of the\nactual networking and connections.\nROS also has the advantage of having a large open source community with tons of packages. This means you\nhave a lot of prewritten code to help with your project and you don’t have to start from scratch.",
       "metadata": {
         "titulo": "ros-intro",
-        "pagina": 0,
         "tipo-documento": "documento-pdf",
+        "pagina": 0,
         "relevance_score": 0.75049835
       }
     },
     {
       "page_content": "Don’t worry if you are still confused, you will start to get a better understanding with some hands on experience.\n To get a better understanding of what ROS is and why it exists, checkout out these videos ( 1  , 2).\nA ROS system can be visualized as a graph where all the vertices are  nodes and the edges between them are\nknown as  topics. In simple terms nodes are programs that perform a particular task and send out/receive data\nin the form of messages. These messages are exchanged between two nodes over the topic (edge) connecting\nthem. An example of a typical ROS system is given in the figure to the left wherein “robot”, “laser”, “map”,\n“localisation” and “planner” are the nodes and the arrows connecting the nodes are the topics. An arrow  from A",
       "metadata": {
-        "pagina": 0,
         "titulo": "ros-intro",
+        "pagina": 0,
         "tipo-documento": "documento-pdf",
         "relevance_score": 0.6429039
       }
@@ -36,12 +40,15 @@
       "page_content": "ROS Package:  All the codes and software in ROS is organised in the form of packages. A package may contain\nROS Nodes, libraries used in those codes, message and service definitions and all the dependencies. Follow  \n11/3/25, 5:53 PM\nGetting Started with ROS - ERC Handbook\nhttps://erc-bpgc.github.io/handbook/automation/ROS/ros/\n2/5",
       "metadata": {
         "tipo-documento": "documento-pdf",
-        "pagina": 1,
         "titulo": "ros-intro",
+        "pagina": 1,
         "relevance_score": 0.3839421
       }
     }
   ],
-  "reranked_count": 3,
-  "note": "Real Cohere reranking results. Use for mocking rerank service in unit tests."
+  "response": {
+    "content": "ROS, or Robot Operating System, is a collection of tools and frameworks designed to simplify the automation of robotics projects. It provides a structured environment where developers can fill in automation code and define how different parts of their code communicate with each other. The underlying ROS framework manages the networking and connections, allowing for easier development.\n\nROS is used for creating and managing robotic systems, enabling the integration of various components and functionalities. It benefits from a large open-source community, offering numerous prewritten packages that help developers avoid starting from scratch. Essentially, ROS facilitates the development of robotics applications by providing a standardized way to organize code and manage communication between different programs, known as nodes, which exchange data through topics.",
+    "model": "gpt-4o-mini-2024-07-18"
+  },
+  "note": "Complete rerank QA with final LLM answer. Use for testing RerankService."
 }

@@ -1,16 +1,24 @@
 {
-  "description": "ChromaDB similarity search results for test query on ros-intro.pdf",
-  "generated_at": "2025-11-23T12:29:04.933793",
+  "description": "LLM QA response for test query on ros-intro.pdf",
+  "generated_at": "2025-11-23T12:29:11.592401",
   "settings": {
-    "collection": "rag-docs",
+    "model": "gpt-4o-mini",
+    "temperature": 0.05,
+    "max_tokens": 4000,
+    "top_p": 0.1,
     "query": "What is ROS and what is it used for?",
-    "k_results": 4,
-    "filter": {
-      "tipo-documento": "documento-pdf"
-    },
-    "document_title": "ros-intro"
+    "document_title": "ros-intro",
+    "k_results": 4
   },
-  "results": [
+  "input": {
+    "query": "What is ROS and what is it used for?",
+    "context_chunks": 4
+  },
+  "response": {
+    "content": "ROS, or Robot Operating System, is a collection of tools and frameworks designed to simplify the automation of robotics projects. It provides a structured environment where developers can fill in automation code and define how different parts of their code communicate with one another. The underlying ROS framework manages the networking and connections between these components.\n\nROS is used for developing robotics applications by allowing users to leverage a large open-source community and a wealth of prewritten code, which helps in accelerating project development without starting from scratch. It organizes all the software and code in the form of packages, which may include ROS nodes, libraries, message and service definitions, and dependencies. Essentially, ROS facilitates the creation and management of complex robotic systems by enabling communication between various programs (nodes) through data exchange over topics.",
+    "model": "gpt-4o-mini-2024-07-18"
+  },
+  "source_documents": [
     {
       "page_content": "Getting Started with Robot Operating System (ROS)”\n1. What is ROS?\nFor someone completely new to ROS, the best way to think about it is a collection of tools and frameworks\nwhich make automating robotics projects much easier. Every ROS project has a certain structure which you\nhave to follow. Your job would be to fill in the automation code along defining how the different parts of your\ncode are communicating with one another. Once this is done, the underlying ROS framework takes care of the\nactual networking and connections.\nROS also has the advantage of having a large open source community with tons of packages. This means you\nhave a lot of prewritten code to help with your project and you don’t have to start from scratch.",
       "metadata": {
@@ -18,36 +26,35 @@
         "tipo-documento": "documento-pdf",
         "pagina": 0
       },
-      "score": 0.25077936
+      "score": 0.25078303
     },
     {
       "page_content": "Don’t worry if you are still confused, you will start to get a better understanding with some hands on experience.\n To get a better understanding of what ROS is and why it exists, checkout out these videos ( 1  , 2).\nA ROS system can be visualized as a graph where all the vertices are  nodes and the edges between them are\nknown as  topics. In simple terms nodes are programs that perform a particular task and send out/receive data\nin the form of messages. These messages are exchanged between two nodes over the topic (edge) connecting\nthem. An example of a typical ROS system is given in the figure to the left wherein “robot”, “laser”, “map”,\n“localisation” and “planner” are the nodes and the arrows connecting the nodes are the topics. An arrow  from A",
       "metadata": {
+        "pagina": 0,
         "tipo-documento": "documento-pdf",
-        "titulo": "ros-intro",
-        "pagina": 0
+        "titulo": "ros-intro"
       },
-      "score": 0.27427214
+      "score": 0.27433473
     },
     {
       "page_content": "ROS Package:  All the codes and software in ROS is organised in the form of packages. A package may contain\nROS Nodes, libraries used in those codes, message and service definitions and all the dependencies. Follow  \n11/3/25, 5:53 PM\nGetting Started with ROS - ERC Handbook\nhttps://erc-bpgc.github.io/handbook/automation/ROS/ros/\n2/5",
       "metadata": {
+        "titulo": "ros-intro",
         "pagina": 1,
-        "tipo-documento": "documento-pdf",
-        "titulo": "ros-intro"
+        "tipo-documento": "documento-pdf"
       },
-      "score": 0.3608581
+      "score": 0.3609653
     },
     {
       "page_content": "2. Reference Material\nWhile we have tried our best to provide a concise introduction to the basic concepts in this document, there are\na lot of other much more thorough and complete resources that you should follow. This document can be\ntreated more as a reference guide with some useful tips for beginners.\nThe two most useful resources you can go through are -\nProgramming Robots with ROS : A Practical Introduction to the Robot Operating System by Morgan Quigley.\nROSwiki tutorials : The official ROS tutorials.\nBoth of these have detailed implementation guides on the basic concepts. The ROSwiki is more concise while\nthe book goes into more detail. We strongly recommend that you go through the first 4 chapters of the book and",
       "metadata": {
-        "tipo-documento": "documento-pdf",
         "titulo": "ros-intro",
+        "tipo-documento": "documento-pdf",
         "pagina": 1
       },
-      "score": 0.36573762
+      "score": 0.3657832
     }
   ],
-  "result_count": 4,
-  "note": "Real ChromaDB search results. Use for mocking VectorDB in unit tests."
+  "note": "Real LLM response. Use for mocking QA service in unit tests."
 }
