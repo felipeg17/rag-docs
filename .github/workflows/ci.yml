@@ -60,6 +60,13 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Run unit tests
+        env:
+          OPENAI_API_KEY: test-openai-key
+          COHERE_API_KEY: test-cohere-key
+          CHROMADB_HOST: localhost
+          CHROMADB_PORT: 9000
+          LANGCHAIN_PROJECT: rag-docs-test
+          HOST: 0.0.0.0
         run: |
           python -m pytest tests/unit/ -v --tb=short
 
