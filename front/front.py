@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from components import chatbot, qa_pdf
+from components import chatbot, qa_pdf  # type: ignore[import-not-found]
 import streamlit as st
 
 

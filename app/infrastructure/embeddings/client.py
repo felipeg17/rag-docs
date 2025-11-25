@@ -8,7 +8,8 @@ class EmbeddingsClient:
 
     def __init__(self, settings: Settings) -> None:
         self._client = OpenAIEmbeddings(
-            model=settings.embeddings_model, api_key=settings.openai_api_key
+            model=settings.embeddings_model,
+            api_key=settings.openai_api_key,  # type: ignore[call-arg]
         )
 
     @property
