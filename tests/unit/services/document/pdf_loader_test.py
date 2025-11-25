@@ -2,7 +2,7 @@ import base64
 from pathlib import Path
 import unittest
 
-import fitz
+import fitz  # type: ignore[import-untyped]
 
 from app.services.document.pdf_loader import PDFLoader
 
