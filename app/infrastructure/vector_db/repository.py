@@ -50,7 +50,10 @@ class VectorDBRepository:
         where_document: dict | None = None,
     ) -> list[tuple[Document, float]]:
         """Perform similarity search with scores."""
+        # * Standard filter by document type
         filter = filter or {"tipo-documento": "documento-pdf"}
+        # * Search for documents that at least have one space in their content
+        # TODO: Check how to avoid this default
         where_document = where_document or {"$contains": " "}
 
         return self._vdb.similarity_search_with_score(
@@ -69,5 +72,7 @@ class VectorDBRepository:
 
     def check_document_exists(self, title_filter: dict) -> bool:
         """Check if document exists by metadata filter."""
+        # * Check if a document exist with the given title
+        # TODO: Same document can be ingested multiple times using different names
         results = self._vdb.get(where=title_filter)
         return len(results.get("ids", [])) > 0
