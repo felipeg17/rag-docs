@@ -1,0 +1,57 @@
+# Gitleaks configuration for detecting hardcoded secrets
+# Documentation: https://github.com/gitleaks/gitleaks
+
+title = "RAG Docs Gitleaks Configuration"
+
+# Extend the default rules
+[extend]
+useDefault = true
+
+# Allowlist specific patterns that are false positives
+[allowlist]
+description = "Allowlisted files and patterns"
+
+# Ignore test fixtures and golden responses (they contain sample data)
+paths = [
+    '''tests/fixtures/golden_responses/.*\.json$''',
+    '''tests/fixtures/data/.*$''',
+    '''\.pytest_cache/.*''',
+    '''\.mypy_cache/.*''',
+    '''\.ruff_cache/.*''',
+    '''__pycache__/.*''',
+]
+
+# Allowlist specific regex patterns (e.g., example keys in comments)
+regexes = [
+    '''(?i)example[_-]?key''',
+    '''(?i)fake[_-]?api[_-]?key''',
+    '''(?i)test[_-]?secret''',
+    '''sk-proj-[A-Za-z0-9_-]{48}''',  # Example OpenAI key pattern in docs
+]
+
+# Custom rules for Python environment variables
+[[rules]]
+id = "python-env-var-assignment"
+description = "Detects potential secrets in Python variable assignments"
+regex = '''(?i)(api[_-]?key|secret|password|token)\s*=\s*['"]['"][^'"\s]{8,}['"]'''
+tags = ["key", "API", "secret"]
+[rules.allowlist]
+description = "Ignore config examples and test files"
+paths = [
+    '''tests/.*''',
+    '''examples/.*''',
+]
+
+# Custom rule for .env file secrets
+[[rules]]
+id = "env-file-secrets"
+description = "Detects secrets in .env files"
+regex = '''(?i)(openai|cohere|aws|api)[_]?(key|secret|token)\s*=\s*[^#\s]{8,}'''
+tags = ["env", "secret"]
+path = '''\.env$'''
+[rules.allowlist]
+description = "Ignore .env.example files"
+paths = [
+    '''\.env\.example$''',
+    '''\.env\.template$''',
+]
