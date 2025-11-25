@@ -13,7 +13,7 @@ class TestPDFTextExtractor(unittest.TestCase):
     def setUpClass(cls):
         # Use ros-intro.pdf as it's small and simple
         project_root = Path(__file__).parent.parent.parent.parent.parent
-        cls.sample_pdf_path = project_root / "documents" / "ros-intro.pdf"
+        cls.sample_pdf_path = project_root / "tests" / "fixtures" / "data" / "ros-intro.pdf"
 
         # Load and parse the PDF
         with open(cls.sample_pdf_path, "rb") as f:
