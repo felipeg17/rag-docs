@@ -11,6 +11,7 @@ v_rag/
 # files
 *.pyc
 USE.md
+TODO.md
 test_bedrock.py
 
 
@@ -19,9 +20,12 @@ __pycache__/
 documents/
 .mypy_cache/
 .ruff_cache/
+.pytest_cache/
+tests/old/
 
 
 # git
 .gitignore
+.git
 
 
