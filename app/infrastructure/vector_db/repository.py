@@ -46,12 +46,12 @@ class VectorDBRepository:
         self,
         query: str,
         k: int | None = None,
-        filter: dict | None = None,  # noqa: A002
+        metadata_filter: dict | None = None,
         where_document: dict | None = None,
     ) -> list[tuple[Document, float]]:
         """Perform similarity search with scores."""
         # * Standard filter by document type
-        filter = filter or {"tipo-documento": "documento-pdf"}
+        filter = metadata_filter or {"tipo-documento": "documento-pdf"}
         # * Search for documents that at least have one space in their content
         # TODO: Check how to avoid this default
         where_document = where_document or {"$contains": " "}

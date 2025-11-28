@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import unittest
 from unittest.mock import MagicMock
 
@@ -14,12 +13,13 @@ from app.core.dependencies import (
 )
 from main import app
 
+from ..services.document.pdf_loader_test import FIXTURES_PATH
+
 
 class TestProcessDocumentController(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        fixtures_path = Path(__file__).parent.parent.parent / "fixtures"
-        golden_responses_path = fixtures_path / "golden_responses"
+        golden_responses_path = FIXTURES_PATH / "golden_responses"
 
         # Load sample PDF base64
         with open(golden_responses_path / "sample_pdf_base64.json", "r") as f:

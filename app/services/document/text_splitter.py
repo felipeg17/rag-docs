@@ -1,5 +1,3 @@
-from typing import Union
-
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai import OpenAIEmbeddings
@@ -20,7 +18,7 @@ class TextSplitterFactory:
         method: str = "recursive",
         chunk_size: int | None = None,
         chunk_overlap: int | None = None,
-    ) -> Union[SemanticChunker, RecursiveCharacterTextSplitter]:
+    ) -> SemanticChunker | RecursiveCharacterTextSplitter:
         """
         Create text splitter based on method.
 

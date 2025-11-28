@@ -32,7 +32,7 @@ class PDFTextExtractor:
 
             # Extract text from page
             page: fitz.Page = pdf_document.load_page(page_number)
-            # TODO:  Check why fitz.Page dos not have `get_text`
+            # TODO:  Check why fitz.Page does not have `get_text`
             # * https://pymupdf.readthedocs.io/en/latest/page.html#Page.get_text
             page_text: str = page.get_text("text")
 

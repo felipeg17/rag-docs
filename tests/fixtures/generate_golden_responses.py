@@ -124,7 +124,7 @@ def generate_chromadb_search_response() -> None:
     search_results = vdb_repo.similarity_search_with_score(
         query=TEST_QUERY,
         k=TEST_K_RESULTS,
-        filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
+        metadata_filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
     )
 
     # Convert to serializable format
@@ -177,7 +177,7 @@ def generate_llm_qa_response() -> None:
     search_results = vdb_repo.similarity_search_with_score(
         query=TEST_QUERY,
         k=TEST_K_RESULTS,
-        filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
+        metadata_filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
     )
 
     context = "\n\n".join([doc.page_content for doc, _ in search_results])
@@ -254,7 +254,7 @@ def generate_cohere_rerank_response() -> None:
     search_results = vdb_repo.similarity_search_with_score(
         query=TEST_QUERY,
         k=TEST_K_RESULTS,
-        filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
+        metadata_filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
     )
 
     documents = [doc for doc, _ in search_results]
@@ -319,7 +319,7 @@ def generate_rerank_qa_complete_response() -> None:
     search_results = vdb_repo.similarity_search_with_score(
         query=TEST_QUERY,
         k=TEST_K_RESULTS,
-        filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
+        metadata_filter={"tipo-documento": {"$eq": TEST_DOCUMENT_TYPE}},
     )
 
     documents = [doc for doc, _ in search_results]

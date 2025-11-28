@@ -7,12 +7,14 @@ import fitz  # type: ignore[import-untyped]
 from app.services.document.pdf_loader import PDFLoader
 
 
+FIXTURES_PATH = Path(__file__).parents[3] / "fixtures"
+
+
 class TestPDFLoader(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Use ros-intro.pdf as it's small and simple
-        project_root = Path(__file__).parent.parent.parent.parent.parent
-        cls.sample_pdf_path = project_root / "tests" / "fixtures" / "data" / "ros-intro.pdf"
+        cls.sample_pdf_path = FIXTURES_PATH / "data" / "ros-intro.pdf"
 
         with open(cls.sample_pdf_path, "rb") as f:
             pdf_bytes = f.read()

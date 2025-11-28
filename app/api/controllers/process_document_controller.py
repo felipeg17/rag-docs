@@ -57,7 +57,7 @@ async def search_vdb(
         vdb_results = vdb_repo.similarity_search_with_score(
             query=request.query,
             k=request.k_results,
-            filter=request.metadata_filter,
+            metadata_filter=request.metadata_filter,
         )
 
         # Parse results (Document, score) tuples

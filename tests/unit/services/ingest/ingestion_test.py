@@ -211,7 +211,11 @@ class TestDocumentIngestionService(unittest.TestCase):
         actual_chunks = self.mock_vdb_repo.add_documents.call_args[0][0]
 
         # Verify chunks were actually created by the real splitter
-        self.assertGreater(len(actual_chunks), 1, "Should split into multiple chunks")
+        self.assertGreater(
+            len(actual_chunks),
+            25,
+            "Should split into at least 25 chunks for 2500 characters with chunk size 100",
+        )
 
         # Verify each chunk has the original metadata
         for chunk in actual_chunks:

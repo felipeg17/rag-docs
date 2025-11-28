@@ -1,17 +1,17 @@
 import json
-from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, patch
 
 from app.core.config import Settings
 from app.services.rag.rerank_service import RerankService
 
+from ..document.pdf_loader_test import FIXTURES_PATH
+
 
 class TestRerankService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        fixtures_path = Path(__file__).parent.parent.parent.parent / "fixtures"
-        golden_responses_path = fixtures_path / "golden_responses"
+        golden_responses_path = FIXTURES_PATH / "golden_responses"
 
         # Load golden response
         with open(golden_responses_path / "rerank_qa_complete_response.json", "r") as f:

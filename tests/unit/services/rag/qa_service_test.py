@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -8,12 +7,13 @@ from langchain.schema import Document
 from app.core.config import Settings
 from app.services.rag.qa_service import QAService
 
+from ..document.pdf_loader_test import FIXTURES_PATH
+
 
 class TestQAService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        fixtures_path = Path(__file__).parent.parent.parent.parent / "fixtures"
-        golden_responses_path = fixtures_path / "golden_responses"
+        golden_responses_path = FIXTURES_PATH / "golden_responses"
 
         # Load golden response
         with open(golden_responses_path / "llm_qa_response.json", "r") as f:
