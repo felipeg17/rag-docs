@@ -21,6 +21,7 @@ documents/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+.backup
 
 # git
 .gitignore
