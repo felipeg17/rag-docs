@@ -4,11 +4,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: fastapi/rag-docs-ms:0.0.2
-    container_name: rag-docs-ms_0.0.2
+    image: ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}
+    container_name: ${BACKEND_IMAGE_NAME}_${IMAGE_TAG}
     network_mode: "host"
     env_file:
-      - .env.backend
+      - image.env
+      - backend.env
     environment:
       - PYTHONPATH=/ms
     restart: unless-stopped
@@ -22,11 +23,12 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile
-    image: streamlit/rag-docs-frontend:0.0.2
-    container_name: rag-docs-frontend_0.0.2
+    image: ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}
+    container_name: ${FRONTEND_IMAGE_NAME}_${IMAGE_TAG}
     network_mode: "host"
     env_file:
-      - front/.env.frontend
+      - image.env
+      - front/frontend.env
     restart: unless-stopped
     depends_on:
       - rag-docs-backend

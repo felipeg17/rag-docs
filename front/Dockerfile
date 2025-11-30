@@ -24,7 +24,7 @@ COPY pages /app/pages
 COPY utils /app/utils
 COPY src /app/src
 COPY data /app/data
-COPY .env.frontend /app/.env
+COPY frontend.env /app/.env
 
 ENV PATH="/app/.venv/bin:$PATH"
 

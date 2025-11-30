@@ -10,8 +10,8 @@ v_rag/
 
 #.env
 .env
-.env.backend
-front/.env.frontend
+*.env
+
 
 
 # files
