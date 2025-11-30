@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  CHROMADB_HOST: "chromadb"
+  CHROMADB_PORT: "8000"
+  HOST: "0.0.0.0"
+  PORT: "8106"
+  LANGCHAIN_PROJECT: "rag-docs-integration"

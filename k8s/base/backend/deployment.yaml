@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-docs-backend
+  labels:
+    app: rag-docs-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-docs-backend
+  template:
+    metadata:
+      labels:
+        app: rag-docs-backend
+    spec:
+      containers:
+        - name: backend
+          image: rag-docs-backend:0.0.2
+          imagePullPolicy: IfNotPresent # Use local images in Minikube
+          ports:
+            - containerPort: 8106
+              name: http
+          env:
+            - name: PYTHONPATH
+              value: "/ms"
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: api-keys
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /rag-docs/health
+              port: 8106
+            initialDelaySeconds: 30
+            periodSeconds: 60

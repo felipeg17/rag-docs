@@ -1,0 +1,28 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: vectordb
+
+build:
+  artifacts:
+    - image: chromadb-init
+      context: .
+      docker:
+        dockerfile: Dockerfile
+
+manifests:
+  rawYaml:
+    - deployment.yaml
+    - service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: chromadb
+    port: 8000
+    localPort: 9001
+
+profiles:
+  - name: local

@@ -1,0 +1,38 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: frontend
+
+requires:
+  - path: ../backend
+
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.IMAGE_TAG}}"
+  artifacts:
+    - image: rag-docs-frontend
+      context: ../../../front
+      docker:
+        dockerfile: Dockerfile
+
+manifests:
+  rawYaml:
+    - deployment.yaml
+    - service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: rag-docs-frontend
+    port: 8502
+    localPort: 8502
+
+profiles:
+  - name: local
+    build:
+      local:
+        push: false
+        useBuildkit: true

@@ -1,0 +1,9 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: rag-docs
+
+requires:
+  - path: k8s/base/vectordb
+  - path: k8s/base/backend
+  - path: k8s/base/frontend
