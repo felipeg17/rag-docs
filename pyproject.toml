@@ -52,10 +52,6 @@ dependencies = [
     # Tokenization
     "tiktoken==0.8.0",
     "tokenizers==0.21.0",
-
-    # Frontend
-    "streamlit==1.41.1",
-    "requests==2.32.3",
 ]
 
 [project.optional-dependencies]
