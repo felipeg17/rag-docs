@@ -17,7 +17,7 @@ WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
 
-# Neccesary folders
+# Necessary folders
 COPY front.py /app/
 COPY components /app/components
 COPY pages /app/pages
