@@ -1,11 +1,17 @@
 # claude
 .claude/
 
+
 # venv
+.venv
 v_rag/
+
+
 
 #.env
 .env
+.env.backend
+front/.env.frontend
 
 
 # files
@@ -22,6 +28,7 @@ documents/
 .ruff_cache/
 .pytest_cache/
 .backup
+
 
 # git
 .gitignore

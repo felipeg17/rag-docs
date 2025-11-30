@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     app_port: int = Field(default=8106)
 
     model_config = SettingsConfigDict(
-        env_file=str(Path(__file__).parent.parent.parent / ".env"),
+        env_file=str(Path(__file__).parent.parent.parent / ".env.backend"),
         case_sensitive=False,
         extra="ignore",
     )

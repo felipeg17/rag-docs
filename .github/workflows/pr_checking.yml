@@ -18,14 +18,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python environment
-        uses: ./.github/actions/setup-python-env
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Install dependencies
+        run: uv sync --all-extras
+
       - name: Check formatting with ruff
-        run: |
-          ruff format --check .
+        run: uv run ruff format --check .
 
   check-typing:
     name: Check type hints
@@ -36,14 +44,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python environment
-        uses: ./.github/actions/setup-python-env
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Install dependencies
+        run: uv sync --all-extras
+
       - name: Run mypy type checking
-        run: |
-          mypy app/ tests/ --config-file pyproject.toml
+        run: uv run mypy app/ tests/ --config-file pyproject.toml
 
   unit-tests:
     name: Run unit tests
@@ -54,10 +70,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python environment
-        uses: ./.github/actions/setup-python-env
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
 
       - name: Run unit tests
         env:
@@ -67,8 +92,7 @@ jobs:
           CHROMADB_PORT: 9000
           LANGCHAIN_PROJECT: rag-docs-test
           HOST: 0.0.0.0
-        run: |
-          python -m pytest tests/unit/ -v --tb=short
+        run: uv run pytest tests/unit/ -v --tb=short
 
       - name: Generate test summary
         if: always()
