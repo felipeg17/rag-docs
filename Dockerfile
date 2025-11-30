@@ -1,15 +1,27 @@
-FROM python:3.10-slim
+# Builder - Install dependencies
+FROM python:3.10-slim AS builder
 
-USER root
-
-RUN pip install --no-cache-dir uv
-
-COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /ms
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --frozen --no-dev
+
+# Runtime
+FROM python:3.10-slim
+
+WORKDIR /ms
+
+COPY --from=builder /ms/.venv /ms/.venv
+
 COPY app /ms/app
 COPY main.py /ms/
+COPY .env.backend /ms/.env
+
+# PYTHON PATH
+ENV PATH="/ms/.venv/bin:$PATH"
 
 EXPOSE 8106
 

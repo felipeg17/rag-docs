@@ -1,27 +1,43 @@
+# Builder - Install dependencies
+FROM python:3.10-slim AS builder
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --frozen --no-dev
+
+
+# Runtime
 FROM python:3.10-slim
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir uv
+COPY --from=builder /app/.venv /app/.venv
 
-# Crear requirements específicos para frontend
-COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
+# Neccesary folders
+COPY front.py /app/
+COPY components /app/components
+COPY pages /app/pages
+COPY utils /app/utils
+COPY src /app/src
+COPY data /app/data
+COPY .env.frontend /app/.env
 
-# Copiar código del frontend
-COPY . /app/
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Configure Streamlit
+RUN mkdir -p /root/.streamlit && \
+    echo '[server]\n\
+    port = 8502\n\
+    address = "0.0.0.0"\n\
+    headless = true\n\
+    enableCORS = false\n\
+    enableXsrfProtection = false\n' > /root/.streamlit/config.toml
 
 EXPOSE 8502
 
-# Configurar Streamlit
-RUN mkdir -p /root/.streamlit
-RUN echo '\
-[server]\n\
-port = 8502\n\
-address = "0.0.0.0"\n\
-headless = true\n\
-enableCORS = false\n\
-enableXsrfProtection = false\n\
-' > /root/.streamlit/config.toml
 
 CMD ["streamlit", "run", "front.py", "--server.port=8502", "--server.address=0.0.0.0"]

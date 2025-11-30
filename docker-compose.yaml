@@ -1,32 +1,36 @@
-version: '3.8'
 
 services:
-  rag-docs-api:
+  rag-docs-backend:
     build:
       context: .
       dockerfile: Dockerfile
-    image: fastapi/rag-docs-ms:0.0.1
-    container_name: rag-docs-ms_0.0.1
+    image: fastapi/rag-docs-ms:0.0.2
+    container_name: rag-docs-ms_0.0.2
     network_mode: "host"
     env_file:
-      - .env
+      - .env.backend
     environment:
       - PYTHONPATH=/ms
     restart: unless-stopped
     mem_limit: 1g
     cpus: 1.0
+    profiles:
+      - backend
+      - full
 
   rag-docs-frontend:
     build:
       context: ./front
       dockerfile: Dockerfile
-    image: streamlit/rag-docs-frontend:0.0.1
-    container_name: rag-docs-frontend
+    image: streamlit/rag-docs-frontend:0.0.2
+    container_name: rag-docs-frontend_0.0.2
     network_mode: "host"
     env_file:
-      - .env
+      - front/.env.frontend
     restart: unless-stopped
     depends_on:
-      - rag-docs-api
+      - rag-docs-backend
     mem_limit: 1g
     cpus: 1.0
+    profiles:
+      - full
