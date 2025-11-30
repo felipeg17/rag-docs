@@ -19,7 +19,7 @@ logging.basicConfig(
 # Parametros
 db_host = os.getenv("CHROMADB_HOST")
 db_port = os.getenv("CHROMADB_PORT")
-tenant = "stage"
+tenant = "dev"
 database = "rag-database"
 collection_name = "rag-docs"
 
