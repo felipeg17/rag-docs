@@ -199,3 +199,4 @@ jobs:
           echo "## Integration Test Results" >> $GITHUB_STEP_SUMMARY
           if [ -f tests/behave/behave-results.json ]; then
             echo "Test results available in artifacts" >> $GITHUB_STEP_SUMMARY
+          fi
