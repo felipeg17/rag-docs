@@ -12,6 +12,9 @@ v_rag/
 .env
 *.env
 
+# Allow template files for CI
+!*.env.template
+
 
 
 # files

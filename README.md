@@ -29,3 +29,9 @@ docker compose --env-file image.env --profile full up --build
 ```bash
 docker compose down
 ```
+
+#### Skaffold
+
+```
+skaffold dev --profile local -f skaffold.yaml
+```

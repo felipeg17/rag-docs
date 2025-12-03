@@ -36,3 +36,9 @@ profiles:
       local:
         push: false
         useBuildkit: true
+  - name: ci
+    build:
+      local:
+        push: false
+        useBuildkit: true
+    portForward: []

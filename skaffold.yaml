@@ -2,8 +2,29 @@ apiVersion: skaffold/v3
 kind: Config
 metadata:
   name: rag-docs
-
 requires:
   - path: k8s/base/vectordb
+    activeProfiles:
+      - name: local
+        activatedBy: [local]
+      - name: ci
+        activatedBy: [ci]
   - path: k8s/base/backend
+    activeProfiles:
+      - name: local
+        activatedBy: [local]
+      - name: ci
+        activatedBy: [ci]
   - path: k8s/base/frontend
+    activeProfiles:
+      - name: local
+        activatedBy: [local]
+      - name: ci
+        activatedBy: [ci]
+
+profiles:
+  - name: local
+
+  - name: ci
+    activation:
+      - env: CI=true

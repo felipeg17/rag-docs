@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: chromadb
-          image: chromadb-init:latest
+          image: chromadb-init
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000

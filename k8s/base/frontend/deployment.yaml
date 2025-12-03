@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: rag-docs-frontend:0.0.2
+          image: rag-docs-frontend
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8502
