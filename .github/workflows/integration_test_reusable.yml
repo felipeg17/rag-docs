@@ -36,14 +36,13 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Setup Minikube
-        uses: medyagh/setup-minikube@v0.0.18
+        uses: manusa/actions-setup-minikube@v2.13.0
         with:
-          minikube-version: ${{ env.MINIKUBE_VERSION }}
-          kubernetes-version: ${{ env.KUBERNETES_VERSION }}
+          minikube version: ${{ env.MINIKUBE_VERSION }}
+          kubernetes version: ${{ env.KUBERNETES_VERSION }}
+          github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          cpus: 2
-          memory: 4096
-          start-args: '--wait=all'
+          start args: '--cpus 2 --memory 4096'
 
       - name: Verify Minikube
         run: |
