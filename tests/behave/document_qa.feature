@@ -1,7 +1,7 @@
 Feature: DocumentQa
     As a rag-docs user,
-    I want to ensure that qa functionality of the backend works correclty,
-    so we can verify that a pdf document is ingested in the vector databse and we
+    I want to ensure that qa functionality of the backend works correctly,
+    so we can verify that a pdf document is ingested in the vector database and we
     can get answer using the rag service.
 
     Scenario:
