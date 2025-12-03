@@ -34,7 +34,7 @@ jobs:
     name: Run Integration Tests
     needs: check-and-run
     if: needs.check-and-run.outputs.should-run == 'true'
-    uses: ./.github/workflows/integration-tests-reusable.yml
+    uses: ./.github/workflows/integration_test_reusable.yml
     with:
       ref: ${{ github.sha }}
     secrets:
