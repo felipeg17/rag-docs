@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-docs-backend
+  labels:
+    app: rag-docs-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8106
+      targetPort: 8106
+      protocol: TCP
+      name: http
+  selector:
+    app: rag-docs-backend
