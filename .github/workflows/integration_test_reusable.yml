@@ -15,9 +15,9 @@ on:
 
 env:
   PYTHON_VERSION: "3.10.12"
-  MINIKUBE_VERSION: "v1.37.0"
-  KUBECTL_VERSION: "v1.34.1"
-  KUBERNETES_VERSION: "v1.34.0"
+  MINIKUBE_VERSION: "v1.34.0"
+  KUBECTL_VERSION: "v1.31.1"
+  KUBERNETES_VERSION: "v1.31.0"
 
 jobs:
   integration-tests:
@@ -36,19 +36,31 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Setup Minikube
-        uses: medyagh/setup-minikube@latest
+        uses: medyagh/setup-minikube@v0.0.18
         with:
           minikube-version: ${{ env.MINIKUBE_VERSION }}
           kubernetes-version: ${{ env.KUBERNETES_VERSION }}
           driver: docker
           cpus: 2
           memory: 4096
+          start-args: '--wait=all'
 
       - name: Verify Minikube
         run: |
+          echo "=== Minikube Status ==="
           minikube status
-          kubectl version
-          kubectl get nodes
+
+          echo "=== Kubectl Version ==="
+          kubectl version --client
+
+          echo "=== Configure kubectl context ==="
+          kubectl config use-context minikube
+
+          echo "=== Get Nodes ==="
+          kubectl get nodes -o wide
+
+          echo "=== Wait for node to be ready ==="
+          kubectl wait --for=condition=ready node --all --timeout=300s
 
       - name: Setup Skaffold
         run: |
