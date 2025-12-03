@@ -10,5 +10,5 @@ Feature: DocumentQaRerank
         When a pdf document with title "ros-intro" is uploaded
         And a question about the document is made
         Then document with title "ros-intro" is created in the vector database
-        And the document with title "ros-intro" is retrivable from the vector database
+        And the document with title "ros-intro" is retrievable from the vector database
         And a question is answered using the document with title "ros-intro" filtered chunks as reference

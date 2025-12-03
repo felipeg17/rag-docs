@@ -67,7 +67,7 @@ def step_impl_create_document_vector_db(context: Context, pdf_title: str) -> Non
     assert status_value is not None, "No status in upload response"
 
 
-@then('the document with title "{pdf_title}" is retrivable from the vector database')
+@then('the document with title "{pdf_title}" is retrievable from the vector database')
 def step_impl_retrieve_document_from_vdb(context: Context, pdf_title: str) -> None:
     """Verify document can be retrieved from vector database."""
     payload = {
