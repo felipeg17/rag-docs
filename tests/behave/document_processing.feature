@@ -1,7 +1,7 @@
 Feature: DocumentProcessing
     As a rag-docs user,
-    I want to ensure that document processing functionality of the backend works correclty,
-    so we can verify that a pdf document is ingested in the vector databse and it is
+    I want to ensure that document processing functionality of the backend works correctly,
+    so we can verify that a pdf document is ingested in the vector database and it is
     retrievable as expected.
 
     Scenario:
