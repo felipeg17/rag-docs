@@ -2,9 +2,9 @@ name: pr-checking
 
 on:
   pull_request:
-    branches: [ master, 'dev', 'ft-*' ]
+    branches: [ main, 'dev', 'ft-*' ]
   push:
-    branches: [ master, 'dev', 'ft-*' ]
+    branches: [ main, 'dev', 'ft-*' ]
 
 env:
   PYTHON_VERSION: '3.10.12'

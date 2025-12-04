@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-docs-frontend
+  labels:
+    app: rag-docs-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-docs-frontend
+  template:
+    metadata:
+      labels:
+        app: rag-docs-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: rag-docs-frontend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8502
+              name: http
+          env:
+            - name: API_HOST
+              value: "rag-docs-backend"
+            - name: API_PORT
+              value: "8106"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
