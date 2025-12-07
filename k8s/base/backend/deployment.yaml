@@ -40,5 +40,5 @@ spec:
             httpGet:
               path: /rag-docs/health
               port: 8106
-            initialDelaySeconds: 30
-            periodSeconds: 60
+            initialDelaySeconds: 5
+            periodSeconds: 120

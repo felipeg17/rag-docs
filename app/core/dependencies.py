@@ -68,7 +68,7 @@ def get_splitter_factory(
     embeddings_client: EmbeddingsClientDep,
 ) -> TextSplitterFactory:
     """Get text splitter factory."""
-    return TextSplitterFactory(settings, embeddings_client.client)
+    return TextSplitterFactory(settings, embeddings_client)
 
 
 def get_ingestion_service(
@@ -92,8 +92,6 @@ def get_qa_service(
     vdb_repo: VectorDBDep,
 ) -> QAService:
     """Get standard QA service."""
-    from app.services.rag.qa_service import QAService
-
     return QAService(settings, llm_client, vdb_repo)
 
 
@@ -102,8 +100,6 @@ def get_rerank_service(
     vdb_repo: VectorDBDep,
 ) -> RerankService:
     """Get rerank QA service."""
-    from app.services.rag.rerank_service import RerankService
-
     return RerankService(settings, llm_client, vdb_repo)
 
 
