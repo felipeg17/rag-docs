@@ -30,7 +30,7 @@ class TestEmbeddingsClient(unittest.TestCase):
     def test_embeddings_client_ollama_initialization(self, mock_ollama_embeddings):
         # Arrange
         settings = Settings(
-            local_llm=True, ollama_embeddings_model="embeddings-model", ollama_base_url="some_ulr"
+            local_llm=True, ollama_embeddings_model="embeddings-model", ollama_base_url="some_url"
         )
         mock_ollama_embeddings.return_value = MagicMock()
 
