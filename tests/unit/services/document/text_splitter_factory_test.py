@@ -16,11 +16,13 @@ class TestTextSplitterFactory(unittest.TestCase):
             default_chunk_overlap=50,
         )
 
-        # Mock embeddings client
+        # Mock embeddings client with a client property
+        self.mock_embeddings_client = MagicMock()
         self.mock_embeddings = MagicMock()
+        self.mock_embeddings_client.client = self.mock_embeddings
 
         # Create factory instance
-        self.factory = TextSplitterFactory(self.settings, self.mock_embeddings)
+        self.factory = TextSplitterFactory(self.settings, self.mock_embeddings_client)
 
     def test_create_recursive_splitter_returns_correct_type(self):
         # Act
