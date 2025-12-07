@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  labels:
+    app: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+        - name: ollama
+          image: ollama/ollama:0.13.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 11434
+              protocol: TCP
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              nvidia.com/gpu: 1
+          env:
+            - name: OLLAMA_HOST
+              value: "0.0.0.0:11434"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+            - name: OLLAMA_LOAD_TIMEOUT
+              value: "15m"
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    while ! /bin/ollama ps > /dev/null 2>&1; do
+                      sleep 2
+                    done
+                    /bin/ollama pull qwen3:8b
+                    /bin/ollama pull nomic-embed-text:v1.5
+      volumes:
+        - name: ollama-data
+          persistentVolumeClaim:
+            claimName: ollama-models-pvc

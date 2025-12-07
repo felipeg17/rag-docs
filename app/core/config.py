@@ -7,9 +7,19 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings from environment variables."""
 
+    # LLM configuration
+    local_llm: bool = Field(default=False, env="LOCAL_LLM")  # type: ignore[call-overload]
+
+    # Ollama Configuration
+    # ollama_model: str = Field(default="llama3.2")
+    ollama_model: str = Field(default="qwen3:8b")
+    ollama_base_url: str = Field(default="http://localhost:11434")
+    ollama_thinking: bool = Field(default=False)
+    ollama_embeddings_model: str = Field("nomic-embed-text:v1.5")
+
     # OpenAI Configuration
     openai_api_key: str = Field(env="OPENAI_API_KEY")  # type: ignore[call-overload]
-    openai_model: str = Field(default="gpt-4o-mini")
+    openai_model: str = Field(default="gpt-4.1-nano")
     openai_temperature: float = Field(default=0.05)
     openai_max_tokens: int = Field(default=4000)
     openai_top_p: float = Field(default=0.1)

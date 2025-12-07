@@ -1,17 +1,17 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain_openai import OpenAIEmbeddings
 
 from app.core.config import Settings
+from app.infrastructure.embeddings.client import EmbeddingsClient
 from app.utils.logger import logger
 
 
 class TextSplitterFactory:
     """Factory for creating text splitters."""
 
-    def __init__(self, settings: Settings, embeddings_client: OpenAIEmbeddings) -> None:
+    def __init__(self, settings: Settings, embeddings_client: EmbeddingsClient) -> None:
         self._settings = settings
-        self._embeddings = embeddings_client
+        self._embeddings = embeddings_client.client
 
     def create_splitter(
         self,

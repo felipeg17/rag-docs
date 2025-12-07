@@ -3,28 +3,18 @@ kind: Config
 metadata:
   name: rag-docs
 requires:
+  - path: ""
   - path: k8s/base/vectordb
-    activeProfiles:
-      - name: local
-        activatedBy: [local]
-      - name: ci
-        activatedBy: [ci]
   - path: k8s/base/backend
-    activeProfiles:
-      - name: local
-        activatedBy: [local]
-      - name: ci
-        activatedBy: [ci]
   - path: k8s/base/frontend
-    activeProfiles:
-      - name: local
-        activatedBy: [local]
-      - name: ci
-        activatedBy: [ci]
 
 profiles:
   - name: local
-
+  - name: ollama
+    patches:
+      - op: add
+        path: /requires/0/path
+        value: k8s/base/ollama
   - name: ci
     activation:
       - env: CI=true
