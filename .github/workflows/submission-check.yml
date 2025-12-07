@@ -1,13 +1,13 @@
-name: pr-checking
+name: submission-check
 
 on:
   pull_request:
-    branches: [ main, 'dev', 'ft-*' ]
+    branches: [main, "dev", "ft-*"]
   push:
-    branches: [ main, 'dev', 'ft-*' ]
+    branches: [main, "dev", "ft-*"]
 
 env:
-  PYTHON_VERSION: '3.10.12'
+  PYTHON_VERSION: "3.10.12"
 
 jobs:
   check-format:
