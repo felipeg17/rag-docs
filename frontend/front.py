@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from components import chatbot, qa_pdf  # type: ignore[import-not-found]
 import streamlit as st
+
+from components import chatbot, qa_pdf
 
 
 PATH = Path(__file__).resolve().parent

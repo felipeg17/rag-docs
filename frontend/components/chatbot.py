@@ -4,6 +4,7 @@ import dotenv
 import requests
 import streamlit as st
 
+
 # Cargar variables de entorno
 dotenv.load_dotenv()
 
@@ -34,9 +35,7 @@ def show():
             for key, value in response.json().items():
                 st.write(f"{key}: {value}")
         else:
-            st.error(
-                f"Request fallido con status code {response.status_code}: {response.text}"
-            )
+            st.error(f"Request fallido con status code {response.status_code}: {response.text}")
 
     # response_container = st.container()
     # container = st.container()
