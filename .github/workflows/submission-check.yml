@@ -11,8 +11,11 @@ env:
 
 jobs:
   check-format:
-    name: Check code formatting
+    name: Check ${{ matrix.component }} code formatting
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [backend, frontend]
 
     steps:
       - name: Checkout code
@@ -22,21 +25,23 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "${{ matrix.component }}/uv.lock"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
+      - name: Install ${{ matrix.component }} dependencies
+        working-directory: ./${{ matrix.component }}
         run: uv sync --all-extras
 
-      - name: Check formatting with ruff
+      - name: Check ${{ matrix.component }} formatting with ruff
+        working-directory: ./${{ matrix.component }}
         run: uv run ruff format --check .
 
-  check-typing:
-    name: Check type hints
+  check-backend-typing:
+    name: Check backend type hints
     runs-on: ubuntu-latest
     needs: check-format
 
@@ -48,23 +53,25 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        working-directory: ./backend
         run: uv sync --all-extras
 
-      - name: Run mypy type checking
-        run: uv run mypy app/ tests/ --config-file pyproject.toml
+      - name: Run mypy type checking on backend
+        working-directory: ./backend
+        run: uv run mypy app/ --config-file pyproject.toml
 
-  unit-tests:
-    name: Run unit tests
+  backend-unit-tests:
+    name: Run backend unit tests
     runs-on: ubuntu-latest
-    needs: check-typing
+    needs: check-backend-typing
 
     steps:
       - name: Checkout code
@@ -74,17 +81,19 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        working-directory: ./backend
         run: uv sync --all-extras
 
-      - name: Run unit tests
+      - name: Run backend unit tests
+        working-directory: ./backend
         env:
           OPENAI_API_KEY: test-openai-key
           COHERE_API_KEY: test-cohere-key
@@ -92,22 +101,21 @@ jobs:
           CHROMADB_PORT: 9000
           LANGCHAIN_PROJECT: rag-docs-test
           HOST: 0.0.0.0
-        run: uv run pytest tests/unit/ -v --tb=short
+        run: uv run pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing
 
-      - name: Generate test summary
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
         if: always()
-        run: |
-          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-          if [ $? -eq 0 ]; then
-            echo "All tests passed!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "Some tests failed. Check logs above." >> $GITHUB_STEP_SUMMARY
-          fi
+        with:
+          working-directory: ./backend
+          files: ./coverage.xml
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   check-secrets:
     name: Scan for hardcoded secrets
     runs-on: ubuntu-latest
-    needs: unit-tests
+    needs: backend-unit-tests
 
     steps:
       - name: Checkout code
