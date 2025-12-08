@@ -67,6 +67,8 @@ async def ingest_document(
             else None,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         error_message = f"Error ingesting document: {type(e).__name__} - {str(e)}"
         logger.error(error_message)
@@ -94,7 +96,9 @@ async def search_document(
     try:
         # Check if document exists
         if not vdb_repo.check_document_exists({"titulo": document_id}):
-            return {"results": []}
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Document '{document_id}' not found"
+            )
 
         # Perform similarity search
         vdb_results = vdb_repo.similarity_search_with_score(
@@ -119,6 +123,8 @@ async def search_document(
             total_results=len(search_items),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         error_message = f"Error searching document: {type(e).__name__} - {str(e)}"
         logger.error(error_message)
