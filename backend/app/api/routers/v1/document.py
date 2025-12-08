@@ -1,5 +1,5 @@
 from typing import Annotated
-import uuid
+from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Path, status
 from fastapi.responses import JSONResponse
@@ -35,20 +35,27 @@ async def ingest_document(
         document_exists = vdb_repo.check_document_exists({"titulo": request.title})
 
         if document_exists:
-            # TODO: When have persistant storage for documents retrieve document_id
-            document_id = str(uuid.uuid4())
+            # TODO: When have persistent storage for documents retrieve document_id
+            document_id = str(uuid4())
 
         # Process document if not present
         if not document_exists:
-            document_id = str(uuid.uuid4())
+            document_id = str(uuid4())
             logger.info(f"Ingesting document: {request.title} (document_id={document_id})")
-            # ? What to do when it resurns False?
-            result_process = ingestion_service.ingest_document(
+            # ? What to do when it returns False?
+            ingestion_result_process = ingestion_service.ingest_document(
                 base64_content=request.document_content,
                 title=request.title,
                 document_type=request.document_type or "documento-pdf",
                 splitting_method="recursive",  # TODO: Make this configurable
             )
+
+            if not ingestion_result_process:
+                logger.error(f"Failed to ingest document: {request.title}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to ingest document: {request.title}",
+                )
 
         response_data = DocumentIngestResponse(
             document_id=document_id,

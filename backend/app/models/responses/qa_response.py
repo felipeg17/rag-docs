@@ -11,8 +11,9 @@ class SourceDocument(BaseModel):
 
 class QuestionAnswerResponse(BaseModel):
     question: str = Field(..., description="Original question")
-    # TODO: Analyze what to do in case document not found
-    answer: Optional[str] = Field(..., description="Generated answer (null if document not found)")
+    answer: Optional[str] = Field(
+        ..., description="Generated answer (error 404 if document not found)"
+    )
     document_id: str = Field(..., description="Document that was queried")
     strategy: Literal["standard", "rerank"] = Field(..., description="Strategy used")
     source_documents: List[SourceDocument] = Field(

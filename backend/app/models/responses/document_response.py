@@ -8,5 +8,5 @@ class DocumentIngestResponse(BaseModel):
     document_id: str = Field(..., description="Unique document identifier")
     title: str = Field(..., description="Document title")
     status: Literal["created", "updated"] = Field(..., description="Creation status")
-    # ? What are we putting here?
+    # Just a human readable comment to clarify the status
     message: str = Field(..., description="Status message")
