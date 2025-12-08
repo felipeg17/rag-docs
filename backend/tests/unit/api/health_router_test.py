@@ -2,7 +2,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
-from backend.main import app
+from main import app
 
 
 class TestHealthRouter(unittest.TestCase):
@@ -12,17 +12,17 @@ class TestHealthRouter(unittest.TestCase):
 
     def test_health_endpoint_returns_200(self):
         # Act
-        response = self.client.get("/rag-docs/health")
+        response = self.client.get("/health")
 
         # Assert
         self.assertEqual(response.status_code, 200)
 
     def test_health_endpoint_returns_correct_message(self):
         # Act
-        response = self.client.get("/rag-docs/health")
+        response = self.client.get("/health")
 
         # Assert
-        self.assertEqual(response.json(), {"status": "service up"})
+        self.assertEqual(response.json(), {"status": "healthy"})
 
 
 if __name__ == "__main__":

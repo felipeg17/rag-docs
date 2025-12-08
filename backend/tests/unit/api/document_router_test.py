@@ -11,7 +11,7 @@ from app.core.dependencies import (
     get_rerank_service,
     get_vector_db_repository,
 )
-from backend.main import app
+from main import app
 
 from ..services.document.pdf_loader_test import FIXTURES_PATH
 
@@ -60,7 +60,8 @@ class TestProcessDocumentController(unittest.TestCase):
 
     def test_document_ingestion_new_document(self):
         # Arrange
-        # ingest_document returns a truthy value for new documents
+        # Document doesn't exist, so it will be created
+        self.mock_vdb_repository.check_document_exists.return_value = False
         self.mock_ingestion_service.ingest_document.return_value = True
 
         payload = {
@@ -70,17 +71,22 @@ class TestProcessDocumentController(unittest.TestCase):
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/document", json=payload)
+        response = self.client.post("/api/v1/documents", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 201)
-        self.assertIn("query_id", response.json())
+        response_data = response.json()
+        self.assertIn("document_id", response_data)
+        self.assertIn("title", response_data)
+        self.assertEqual(response_data["status"], "created")
+        self.assertEqual(response_data["title"], "test-document")
         self.mock_ingestion_service.ingest_document.assert_called_once()
+        self.mock_vdb_repository.check_document_exists.assert_called_once()
 
     def test_document_ingestion_existing_document(self):
         # Arrange
-        # ingest_document returns a falsy value for existing documents
-        self.mock_ingestion_service.ingest_document.return_value = False
+        # Document already exists, so it will return 200 and "updated" status
+        self.mock_vdb_repository.check_document_exists.return_value = True
 
         payload = {
             "title": "existing-document",
@@ -89,23 +95,28 @@ class TestProcessDocumentController(unittest.TestCase):
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/document", json=payload)
+        response = self.client.post("/api/v1/documents", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 200)
-        self.assertIn("query_id", response.json())
-        self.assertFalse(response.json()["status"])
-        self.mock_ingestion_service.ingest_document.assert_called_once()
+        response_data = response.json()
+        self.assertIn("document_id", response_data)
+        self.assertEqual(response_data["status"], "updated")
+        self.assertEqual(response_data["title"], "existing-document")
+        # Should NOT call ingestion service for existing documents
+        self.mock_ingestion_service.ingest_document.assert_not_called()
+        self.mock_vdb_repository.check_document_exists.assert_called_once()
 
     def test_document_ingestion_missing_parameters(self):
         # Arrange
         payload = {
-            "document_type": "documento-pdf",
+            "document_type": "pdf",
             "document_content": "base64content",
+            # Missing required "title" field
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/document", json=payload)
+        response = self.client.post("/api/v1/documents", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 422)
@@ -113,16 +124,18 @@ class TestProcessDocumentController(unittest.TestCase):
     def test_document_ingestion_service_error(self):
         """Test document ingestion endpoint handles service errors."""
         # Arrange
+        self.mock_vdb_repository.check_document_exists.return_value = False
         self.mock_ingestion_service.ingest_document.side_effect = Exception("Service error")
 
+        # Use valid base64 content (this is "test content" encoded)
         payload = {
             "title": "test-document",
             "document_type": "documento-pdf",
-            "document_content": "base64content",
+            "document_content": "dGVzdCBjb250ZW50",
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/document", json=payload)
+        response = self.client.post("/api/v1/documents", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 500)
@@ -141,32 +154,33 @@ class TestProcessDocumentController(unittest.TestCase):
         self.mock_vdb_repository.similarity_search_with_score.return_value = search_results
         self.mock_vdb_repository.check_document_exists.return_value = True
 
+        document_id = "test-document"
         payload = {
             "query": "What is ROS and what is it used for?",
-            "document_type": "documento-pdf",
             "k_results": 4,
+            "metadata_filter": {},
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/vdb_result", json=payload)
+        response = self.client.post(f"/api/v1/documents/{document_id}/search", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertIn("results", response_data)
+        self.assertIn("query", response_data)
+        self.assertIn("total_results", response_data)
+        self.assertEqual(response_data["query"], "What is ROS and what is it used for?")
+        self.assertEqual(response_data["total_results"], 4)
         self.assertEqual(len(response_data["results"]), 4)
 
-        # Verify first result structure - it's a tuple [document_dict, score]
+        # Verify first result structure - should be SearchResultItem
         first_result = response_data["results"][0]
-        self.assertIsInstance(first_result, list)
-        self.assertEqual(len(first_result), 2)
-
-        # First element is document dict, second is score
-        doc_dict = first_result[0]
-        score = first_result[1]
-        self.assertIn("page_content", doc_dict)
-        self.assertIn("metadata", doc_dict)
-        self.assertIsInstance(score, float)
+        self.assertIsInstance(first_result, dict)
+        self.assertIn("content", first_result)
+        self.assertIn("score", first_result)
+        self.assertIn("metadata", first_result)
+        self.assertIsInstance(first_result["score"], float)
 
     def test_qa_endpoint_success(self):
         # Arrange - Use golden QA response
@@ -185,39 +199,52 @@ class TestProcessDocumentController(unittest.TestCase):
         self.mock_qa_service.answer_question.return_value = qa_result
         self.mock_vdb_repository.check_document_exists.return_value = True
 
+        document_id = "test-document"
         payload = {
-            "query": "What is ROS and what is it used for?",
-            "document_type": "documento-pdf",
+            "question": "What is ROS and what is it used for?",
+            "strategy": "standard",
             "k_results": 4,
+            "metadata_filter": {},
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/qa", json=payload)
+        response = self.client.post(f"/api/v1/documents/{document_id}/ask", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
         # Verify response structure
-        self.assertIn("query", response_data)
-        self.assertIn("result", response_data)
+        self.assertIn("question", response_data)
+        self.assertIn("answer", response_data)
         self.assertIn("source_documents", response_data)
+        self.assertIn("document_id", response_data)
+        self.assertIn("strategy", response_data)
 
         # Verify content
-        self.assertEqual(response_data["query"], "What is ROS and what is it used for?")
-        self.assertIsInstance(response_data["result"], str)
-        self.assertGreater(len(response_data["result"]), 0)
+        self.assertEqual(response_data["question"], "What is ROS and what is it used for?")
+        self.assertEqual(response_data["document_id"], document_id)
+        self.assertEqual(response_data["strategy"], "standard")
+        self.assertIsInstance(response_data["answer"], str)
+        self.assertGreater(len(response_data["answer"]), 0)
         self.assertIsInstance(response_data["source_documents"], list)
         self.assertEqual(len(response_data["source_documents"]), 4)
 
     def test_qa_endpoint_service_error_returns_500(self):
         # Arrange
+        self.mock_vdb_repository.check_document_exists.return_value = True
         self.mock_qa_service.answer_question.side_effect = Exception("LLM service error")
 
-        payload = {"query": "test query", "k_results": 4}
+        document_id = "test-document"
+        payload = {
+            "question": "test query",
+            "strategy": "standard",
+            "k_results": 4,
+            "metadata_filter": {},
+        }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/qa", json=payload)
+        response = self.client.post(f"/api/v1/documents/{document_id}/ask", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 500)
@@ -230,40 +257,90 @@ class TestProcessDocumentController(unittest.TestCase):
         self.mock_rerank_service.answer_question.return_value = answer_text
         self.mock_vdb_repository.check_document_exists.return_value = True
 
+        document_id = "test-document"
         payload = {
-            "query": "What is ROS and what is it used for?",
-            "document_type": "documento-pdf",
+            "question": "What is ROS and what is it used for?",
+            "strategy": "rerank",
             "k_results": 4,
+            "metadata_filter": {},
         }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/qa_ranked", json=payload)
+        response = self.client.post(f"/api/v1/documents/{document_id}/ask", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
         # Verify response structure
-        self.assertIn("query", response_data)
-        self.assertIn("result", response_data)
+        self.assertIn("question", response_data)
+        self.assertIn("answer", response_data)
+        self.assertIn("document_id", response_data)
+        self.assertIn("strategy", response_data)
+        self.assertIn("source_documents", response_data)
 
         # Verify content
-        self.assertEqual(response_data["query"], "What is ROS and what is it used for?")
-        self.assertIsInstance(response_data["result"], str)
-        self.assertGreater(len(response_data["result"]), 0)
+        self.assertEqual(response_data["question"], "What is ROS and what is it used for?")
+        self.assertEqual(response_data["document_id"], document_id)
+        self.assertEqual(response_data["strategy"], "rerank")
+        self.assertIsInstance(response_data["answer"], str)
+        self.assertGreater(len(response_data["answer"]), 0)
+        # Rerank doesn't return source documents
+        self.assertEqual(len(response_data["source_documents"]), 0)
 
     def test_rerank_qa_endpoint_service_error(self):
         # Arrange
+        self.mock_vdb_repository.check_document_exists.return_value = True
         self.mock_rerank_service.answer_question.side_effect = Exception("Rerank service error")
 
-        payload = {"query": "test query", "k_results": 4}
+        document_id = "test-document"
+        payload = {
+            "question": "test query",
+            "strategy": "rerank",
+            "k_results": 4,
+            "metadata_filter": {},
+        }
 
         # Act
-        response = self.client.post("/rag-docs/api/v1/qa_ranked", json=payload)
+        response = self.client.post(f"/api/v1/documents/{document_id}/ask", json=payload)
 
         # Assert
         self.assertEqual(response.status_code, 500)
         self.assertIn("detail", response.json())
+
+    def test_qa_endpoint_document_not_found_returns_404(self):
+        # Arrange
+        self.mock_vdb_repository.check_document_exists.return_value = False
+
+        document_id = "non-existent-document"
+        payload = {"question": "test query", "strategy": "standard", "k_results": 4}
+
+        # Act
+        response = self.client.post(f"/api/v1/documents/{document_id}/ask", json=payload)
+
+        # Assert
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("detail", response.json())
+        self.assertIn("not found", response.json()["detail"].lower())
+
+    def test_search_endpoint_document_not_found_returns_empty_results(self):
+        # Arrange
+        self.mock_vdb_repository.check_document_exists.return_value = False
+
+        document_id = "non-existent-document"
+        payload = {
+            "query": "test query",
+            "k_results": 4,
+            "metadata_filter": {},
+        }
+
+        # Act
+        response = self.client.post(f"/api/v1/documents/{document_id}/search", json=payload)
+
+        # Assert
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("detail", response.json())
+        self.assertIn("not found", response.json()["detail"].lower())
 
 
 if __name__ == "__main__":
