@@ -38,7 +38,7 @@ spec:
               cpu: "1000m"
           livenessProbe:
             httpGet:
-              path: /rag-docs/health
+              path: /health
               port: 8106
             initialDelaySeconds: 5
             periodSeconds: 120

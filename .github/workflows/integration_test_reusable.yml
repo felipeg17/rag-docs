@@ -39,7 +39,7 @@ jobs:
           kubernetes version: ${{ env.KUBERNETES_VERSION }}
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          start args: '--cpus 2 --memory 4096'
+          start args: "--cpus 2 --memory 4096"
 
       - name: Verify Minikube
         run: |
@@ -74,17 +74,18 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
 
       - name: Install Python dependencies
+        working-directory: ./backend
         run: uv sync --extra integration
 
       # ===== BUILD & DEPLOY =====
       - name: Prepare .env files for Docker build
         run: |
           echo "Creating .env files from templates..."
-          cp backend.env.template backend.env
-          cp frontend.env.template front/frontend.env
+          cp backend/backend.env.template backend/backend.env
+          cp frontend/frontend.env.template frontend/frontend.env
 
       - name: Build Docker images
         env:
@@ -97,8 +98,8 @@ jobs:
 
           # Build images directly in Minikube
           docker build -t chromadb-init:${IMAGE_TAG} -f k8s/base/vectordb/Dockerfile k8s/base/vectordb/
-          docker build -t rag-docs-backend:${IMAGE_TAG} -f Dockerfile .
-          docker build -t rag-docs-frontend:${IMAGE_TAG} -f front/Dockerfile front
+          docker build -t rag-docs-backend:${IMAGE_TAG} -f backend/Dockerfile backend
+          docker build -t rag-docs-frontend:${IMAGE_TAG} -f frontend/Dockerfile frontend
 
           # Verify images
           docker images | grep ${IMAGE_TAG}
@@ -145,7 +146,7 @@ jobs:
           sleep 10
 
           # Verify port forwards (with timeout)
-          curl -f --max-time 10 http://localhost:8106/rag-docs/health || (echo "Backend health check failed" && exit 1)
+          curl -f --max-time 10 http://localhost:8106/health || (echo "Backend health check failed" && exit 1)
           curl -f --max-time 10 http://localhost:9001/api/v2/heartbeat || (echo "ChromaDB health check failed" && exit 1)
 
       # ===== RUN TESTS =====
@@ -154,7 +155,7 @@ jobs:
           BACKEND_URL: http://localhost:8106
           CHROMADB_URL: http://localhost:9001
         run: |
-          cd tests/behave
+          cd backend/tests/behave
           uv run behave --format=pretty --format=json --outfile=behave-results.json
 
       # ===== CLEANUP & ARTIFACTS =====
@@ -183,7 +184,7 @@ jobs:
         with:
           name: integration-test-results-${{ github.sha }}
           path: |
-            tests/behave/*.json
+            backend/tests/behave/*.json
             logs/
           if-no-files-found: ignore
 
@@ -197,6 +198,6 @@ jobs:
         if: always()
         run: |
           echo "## Integration Test Results" >> $GITHUB_STEP_SUMMARY
-          if [ -f tests/behave/behave-results.json ]; then
+          if [ -f backend/tests/behave/behave-results.json ]; then
             echo "Test results available in artifacts" >> $GITHUB_STEP_SUMMARY
           fi

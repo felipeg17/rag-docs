@@ -2,14 +2,14 @@
 services:
   rag-docs-backend:
     build:
-      context: .
+      context: backend/
       dockerfile: Dockerfile
     image: ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}
     container_name: ${BACKEND_IMAGE_NAME}_${IMAGE_TAG}
     network_mode: "host"
     env_file:
+      - backend/backend.env
       - image.env
-      - backend.env
     environment:
       - PYTHONPATH=/ms
     restart: unless-stopped
@@ -21,14 +21,14 @@ services:
 
   rag-docs-frontend:
     build:
-      context: ./front
+      context: ./frontend
       dockerfile: Dockerfile
     image: ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}
     container_name: ${FRONTEND_IMAGE_NAME}_${IMAGE_TAG}
     network_mode: "host"
     env_file:
+      - frontend/frontend.env
       - image.env
-      - front/frontend.env
     restart: unless-stopped
     depends_on:
       - rag-docs-backend
