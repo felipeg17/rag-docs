@@ -1,7 +1,42 @@
+import os
+from functools import lru_cache
 from pathlib import Path
 
+import requests
+from google.cloud import secretmanager
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.utils.logger import logger
+
+
+def _get_gcp_project_id() -> str:
+    """Get GCP project ID from metadata server (works in Cloud Run) or env var."""
+    try:
+        # (Cloud Run, Compute Engine)
+        response = requests.get(
+            "http://metadata.google.internal/computeMetadata/v1/project/project-id",
+            headers={"Metadata-Flavor": "Google"},
+            timeout=1,
+        )
+        return response.text
+    except Exception:
+        logger.info("Running locally, retrieving project_id using env var...")
+        return os.getenv("PROJECT_ID", "")
+
+
+@lru_cache(maxsize=10)
+def _get_secret(secret_id: str) -> str:
+    """Fetch secret from GCP Secret Manager. Cached."""
+    try:
+        project_id = _get_gcp_project_id()
+        client = secretmanager.SecretManagerServiceClient()
+        name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
+        response = client.access_secret_version(request={"name": name})
+        return response.payload.data.decode("UTF-8")
+    except Exception:
+        logger.info("Running locally, retrieving from env var...")
+        return os.getenv(secret_id.upper().replace("-", "_"), "")
 
 
 class Settings(BaseSettings):
@@ -18,7 +53,11 @@ class Settings(BaseSettings):
     ollama_embeddings_model: str = Field(default="nomic-embed-text:v1.5")  # type: ignore[call-arg]
 
     # OpenAI Configuration
-    openai_api_key: str = Field(default="", env="OPENAI_API_KEY")  # type: ignore[call-overload]
+    # openai_api_key: str = Field(default="", env="OPENAI_API_KEY")  # type: ignore[call-overload]
+    @property
+    def openai_api_key(self) -> str:
+        return _get_secret("openai-api-key")
+
     openai_model: str = Field(default="gpt-4.1-nano")
     openai_temperature: float = Field(default=0.05)
     openai_max_tokens: int = Field(default=4000)
@@ -42,7 +81,11 @@ class Settings(BaseSettings):
 
     # Cohere Configuration (for reranking)
     cohere_model: str = Field(default="rerank-v3.5")
-    cohere_api_key: str = Field(default="", env="COHERE_API_KEY")  # type: ignore[call-overload]
+
+    # cohere_api_key: str = Field(default="", env="COHERE_API_KEY")  # type: ignore[call-overload]
+    @property
+    def cohere_api_key(self) -> str:
+        return _get_secret("cohere-api-key")
 
     # Application
     app_host: str = Field(default="0.0.0.0", env="HOST")  # type: ignore[call-overload]
