@@ -1,6 +1,6 @@
+import requests
 from behave import then, when  # type: ignore
 from behave.runner import Context  # type: ignore
-import requests
 
 
 @when("a question about the document is made")

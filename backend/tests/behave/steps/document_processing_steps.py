@@ -1,10 +1,10 @@
 import base64
-from pathlib import Path
 import time
+from pathlib import Path
 
+import requests
 from behave import given, then, when  # type: ignore
 from behave.runner import Context  # type: ignore
-import requests
 
 
 @given("the vector database is running")

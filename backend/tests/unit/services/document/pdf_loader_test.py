@@ -1,6 +1,6 @@
 import base64
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 import fitz  # type: ignore[import-untyped]
 
