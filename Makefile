@@ -1,25 +1,33 @@
 # RAG-Docs Makefile
 # Basic Docker Compose operations
 
-up: docker compose --profile full up -
+up:
+	docker compose --profile full up
 
-up-backend: docker compose --profile backend up 
+up-backend: 
+	docker compose --profile backend up 
 
-down: docker compose down
+down:
+	docker compose down
 
-build: docker compose build
+build:
+	docker compose build
 
-build-backend: docker compose build rag-docs-backend
+build-backend:
+	docker compose build rag-docs-backend
 
-rebuild: 
+rebuild:
 	docker compose build --no-cache
-	docker compose --profile full up -d
+	docker compose --profile full up
 
-logs: docker compose logs -f
+logs:
+	docker compose logs -f
 
-ps: docker compose ps
+ps:
+	docker compose ps
 
-clean: docker compose down --remove-orphans
+clean:
+	docker compose down --remove-orphans
 
 prune:
 	docker system prune -af --volumes
