@@ -1,6 +1,6 @@
+import requests
 from behave import then  # type: ignore
 from behave.runner import Context  # type: ignore
-import requests
 
 
 @then(

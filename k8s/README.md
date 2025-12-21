@@ -10,6 +10,8 @@
     minikube addons enable nvidia-device-plugin
     # It should appear a number >0
     kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{" => "}{.status.allocatable.nvidia\.com/gpu}{"\n"}{end}'
+    # Add gcloud auth
+    minikube addons enable gcp-auth --force --refresh
     ```
 
 2.  Skaffold out with `ollama` profile.

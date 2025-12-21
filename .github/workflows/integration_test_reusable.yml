@@ -1,4 +1,4 @@
-name: Integration Tests (Reusable)
+name: integration-tests
 
 on:
   workflow_call:
@@ -7,30 +7,47 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
-    secrets:
-      OPENAI_API_KEY:
-        required: true
-      COHERE_API_KEY:
-        required: true
 
 env:
   PYTHON_VERSION: "3.10.12"
   MINIKUBE_VERSION: "v1.34.0"
   KUBECTL_VERSION: "v1.31.1"
   KUBERNETES_VERSION: "v1.31.0"
+  GCP_PROJECT_ID: "clocus-ai-dev"
+  GCP_SERVICE_ACCOUNT: "rag-docs@clocus-ai-dev.iam.gserviceaccount.com"
+  GCP_WORKLOAD_IDENTITY_PROVIDER: "projects/110921468278/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
 
 jobs:
   integration-tests:
     name: Run Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+
+    # Required for Workload Identity Federation
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
-      # ===== SETUP =====
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get secrets from Secret Manager
+        id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v2
+        with:
+          secrets: |-
+            OPENAI_API_KEY:projects/${{ env.GCP_PROJECT_ID }}/secrets/openai-api-key/versions/latest
+            COHERE_API_KEY:projects/${{ env.GCP_PROJECT_ID }}/secrets/cohere-api-key/versions/latest
 
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.13.0
@@ -43,19 +60,10 @@ jobs:
 
       - name: Verify Minikube
         run: |
-          echo "=== Minikube Status ==="
           minikube status
-
-          echo "=== Kubectl Version ==="
           kubectl version --client
-
-          echo "=== Configure kubectl context ==="
           kubectl config use-context minikube
-
-          echo "=== Get Nodes ==="
           kubectl get nodes -o wide
-
-          echo "=== Wait for node to be ready ==="
           kubectl wait --for=condition=ready node --all --timeout=300s
 
       - name: Setup Skaffold
@@ -80,7 +88,6 @@ jobs:
         working-directory: ./backend
         run: uv sync --extra integration
 
-      # ===== BUILD & DEPLOY =====
       - name: Prepare .env files for Docker build
         run: |
           echo "Creating .env files from templates..."
@@ -106,8 +113,8 @@ jobs:
 
       - name: Create Kubernetes secrets
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          OPENAI_API_KEY: ${{ steps.secrets.outputs.OPENAI_API_KEY }}
+          COHERE_API_KEY: ${{ steps.secrets.outputs.COHERE_API_KEY }}
         run: |
           kubectl create secret generic api-keys \
             --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
@@ -119,21 +126,19 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           CI: true
         run: |
-          # Deploy using CI profile
           skaffold run -p ci --default-repo="" --tag=${IMAGE_TAG}
 
       - name: Wait for deployments to be ready
         run: |
           echo "Waiting for ChromaDB..."
-          kubectl wait --for=condition=ready pod -l app=chromadb --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=chromadb --timeout=100s
 
           echo "Waiting for Backend..."
-          kubectl wait --for=condition=ready pod -l app=rag-docs-backend --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=rag-docs-backend --timeout=100s
 
           echo "Waiting for Frontend..."
-          kubectl wait --for=condition=ready pod -l app=rag-docs-frontend --timeout=300s
+          kubectl wait --for=condition=ready pod -l app=rag-docs-frontend --timeout=100s
 
-          # Show pod status
           kubectl get pods
 
       - name: Setup port forwarding
@@ -141,15 +146,12 @@ jobs:
           echo "Setting up port forwarding..."
           kubectl port-forward svc/rag-docs-backend 8106:8106 &
           kubectl port-forward svc/chromadb 9001:8000 &
-
-          # Wait for port forwards to establish
           sleep 10
 
-          # Verify port forwards (with timeout)
+          # Verify port forwards
           curl -f --max-time 10 http://localhost:8106/health || (echo "Backend health check failed" && exit 1)
           curl -f --max-time 10 http://localhost:9001/api/v2/heartbeat || (echo "ChromaDB health check failed" && exit 1)
 
-      # ===== RUN TESTS =====
       - name: Run Behave integration tests
         env:
           BACKEND_URL: http://localhost:8106
@@ -158,11 +160,9 @@ jobs:
           cd backend/tests/behave
           uv run behave --format=pretty --format=json --outfile=behave-results.json
 
-      # ===== CLEANUP & ARTIFACTS =====
       - name: Collect logs on failure
         if: failure()
         run: |
-          echo "=== Collecting pod logs ==="
           mkdir -p logs
 
           # Get all pod names (last 500 lines only to save time)
@@ -172,10 +172,7 @@ jobs:
             kubectl logs --tail=500 $pod_name > logs/${pod_name}.log 2>&1 || echo "Failed to get logs for $pod_name"
           done
 
-          # Get events
           kubectl get events --sort-by='.lastTimestamp' > logs/events.log
-
-          # Get pod descriptions
           kubectl describe pods > logs/pod-descriptions.log
 
       - name: Upload test results
