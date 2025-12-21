@@ -3,6 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import requests
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud import secretmanager
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -20,7 +21,13 @@ def _get_gcp_project_id() -> str:
             timeout=1,
         )
         return response.text
-    except Exception:
+
+    except requests.RequestException:
+        logger.info("Not running in GCP environment, trying env var...")
+        return os.getenv("PROJECT_ID", "")
+
+    except Exception as e:
+        logger.info(f"Exception: {e}")
         logger.info("Running locally, retrieving project_id using env var...")
         return os.getenv("PROJECT_ID", "")
 
@@ -34,7 +41,13 @@ def _get_secret(secret_id: str) -> str:
         name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
         response = client.access_secret_version(request={"name": name})
         return response.payload.data.decode("UTF-8")
-    except Exception:
+
+    except GoogleAPIError:
+        logger.info(f"Secret {secret_id} not found in GCP Secret Manager.")
+        return ""
+
+    except Exception as e:
+        logger.info(f"Exception: {e}")
         logger.info("Running locally, retrieving from env var...")
         return os.getenv(secret_id.upper().replace("-", "_"), "")
 
