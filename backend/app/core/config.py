@@ -20,6 +20,7 @@ def _get_gcp_project_id() -> str:
             headers={"Metadata-Flavor": "Google"},
             timeout=1,
         )
+        response.raise_for_status()
         return response.text
 
     except requests.RequestException:

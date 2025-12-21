@@ -134,10 +134,10 @@ jobs:
           kubectl wait --for=condition=ready pod -l app=chromadb --timeout=100s
 
           echo "Waiting for Backend..."
-          kubectl wait --for=condition=ready pod -l app=rag-docs-backend --timeout=30s
+          kubectl wait --for=condition=ready pod -l app=rag-docs-backend --timeout=100s
 
           echo "Waiting for Frontend..."
-          kubectl wait --for=condition=ready pod -l app=rag-docs-frontend --timeout=30s
+          kubectl wait --for=condition=ready pod -l app=rag-docs-frontend --timeout=100s
 
           kubectl get pods
 

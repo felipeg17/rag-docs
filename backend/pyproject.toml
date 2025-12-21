@@ -87,7 +87,7 @@ section-order = [
 ]
 lines-after-imports = 2
 known-first-party = ["app"]
-combine-as-imports = false
+combine-as-imports = true
 force-single-line = false
 split-on-trailing-comma = false
 # This forces 'import x' before 'from x import y' WITHIN each section
