@@ -3,10 +3,12 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.core.config import Settings, settings
+from app.core.config import Settings, VectorDBType, settings
 from app.infrastructure.embeddings.client import EmbeddingsClient
 from app.infrastructure.llm.client import LLMClient
 from app.infrastructure.vector_db.chroma_client import ChromaDBClient
+from app.infrastructure.vector_db.pgvector_client import PGVectorClient
+from app.infrastructure.vector_db.pgvector_repository import PGVectorDBRepository
 from app.infrastructure.vector_db.repository import VectorDBRepository
 from app.services.document.text_splitter import TextSplitterFactory
 from app.services.ingest.ingestion import DocumentIngestionService
@@ -46,12 +48,22 @@ def get_chroma_client() -> ChromaDBClient:
 
 
 @lru_cache()
+def get_pgvector_client() -> PGVectorClient:
+    """Get PGVector PostgreSQL client"""
+    return PGVectorClient(settings)
+
+
+@lru_cache()
 def get_vector_db_repository(
     chroma_client: Annotated[ChromaDBClient, Depends(get_chroma_client)],
+    pgvector_client: Annotated[PGVectorClient, Depends(get_pgvector_client)],
     embeddings_client: Annotated[EmbeddingsClient, Depends(get_embeddings_client)],
-) -> VectorDBRepository:
-    """Get vector database repository"""
-    return VectorDBRepository(settings, chroma_client, embeddings_client)
+) -> VectorDBRepository | PGVectorDBRepository:
+    """Get vector database repository (Chroma or PGVector based on settings)"""
+    if settings.vector_db_type == VectorDBType.PGVECTOR:
+        return PGVectorDBRepository(settings, pgvector_client, embeddings_client)
+    else:
+        return VectorDBRepository(settings, chroma_client, embeddings_client)
 
 
 # Type aliases for dependency injection

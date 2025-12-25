@@ -20,7 +20,7 @@ class DocumentIngestionService:
         self,
         base64_content: str,
         title: str,
-        document_type: str = "documento-pdf",
+        document_type: str = "documento_pdf",
         splitting_method: str = "recursive",
         chunk_size: int | None = None,
         chunk_overlap: int | None = None,
