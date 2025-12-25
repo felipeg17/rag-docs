@@ -99,7 +99,7 @@ class TestVectorDBRepository(unittest.TestCase):
         mock_chroma_instance.similarity_search_with_score.assert_called_once_with(
             query="test query",
             k=2,
-            filter={"tipo-documento": "documento-pdf"},
+            filter={"tipo_documento": "documento-pdf"},
             where_document={"$contains": " "},
         )
         self.assertEqual(results, expected_results)
