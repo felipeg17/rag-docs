@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     chromadb_collection: str = Field(default="rag-docs")
 
     # PGVector Configuration
+    # * Based on: https://docs.langchain.com/oss/python/integrations/vectorstores/pgvectorstore
     pgvector_host: Annotated[str, Field(env="PGVECTOR_HOST")] = "localhost"
     pgvector_port: Annotated[int, Field(env="PGVECTOR_PORT")] = 6024
     pgvector_user: Annotated[str, Field(env="PGVECTOR_USER")] = "langchain"

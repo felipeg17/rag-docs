@@ -45,7 +45,7 @@ class PGVectorDBRepository:
             metadata_columns=[col["name"] for col in PGVectorClient.METADATA_COLUMNS],
         )
 
-        logger.info(f"VectorDB repository initialized with table' {self._settings.pgvector_table}'")
+        logger.info(f"VectorDB repository initialized with table '{self._settings.pgvector_table}'")
 
     @property
     def vdb(self) -> PGVectorStore:
