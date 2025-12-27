@@ -3,7 +3,6 @@ kind: Config
 metadata:
   name: rag-docs
 requires:
-  - path: ""
   - path: k8s/base/vectordb
   - path: k8s/base/backend
   - path: k8s/base/frontend
@@ -13,8 +12,10 @@ profiles:
   - name: ollama
     patches:
       - op: add
-        path: /requires/0/path
-        value: k8s/base/ollama
+        path: /requires/0
+        value:
+          path: k8s/base/ollama
+  - name: pgvector
   - name: ci
     activation:
       - env: CI=true
