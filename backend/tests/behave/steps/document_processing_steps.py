@@ -6,19 +6,17 @@ import requests
 from behave import given, then, when  # type: ignore
 from behave.runner import Context  # type: ignore
 
+from app.core.config import VectorDBType, settings
+from app.core.dependencies import get_chroma_client, get_pgvector_client
+
 
 @given("the vector database is running")
 def step_impl_vector_db_running(context: Context) -> None:
-    max_retries = 5
-    for _ in range(max_retries):
-        try:
-            response = requests.get(f"{context.vectordb_url}/api/v2/healthcheck", timeout=1)
-            if response.status_code == 200:
-                return
-        except requests.exceptions.RequestException:
-            time.sleep(0.5)
-
-    raise AssertionError("Vector database not accessible through backend")
+    if settings.vector_db_type == VectorDBType.PGVECTOR and not get_pgvector_client().heartbeat():
+        raise AssertionError("PGVector not accessible through backend")
+    else:
+        if not get_chroma_client().heartbeat():
+            raise AssertionError("ChromaDB not accessible through backend")
 
 
 @given("the backend is running")
