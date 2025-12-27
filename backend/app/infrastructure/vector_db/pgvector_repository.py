@@ -1,42 +1,55 @@
 from langchain.schema import Document
-from langchain_chroma import Chroma
+from langchain_postgres import PGEngine, PGVectorStore
 
 from app.core.config import Settings
 from app.infrastructure.embeddings.client import EmbeddingsClient
-from app.infrastructure.vector_db.chroma_client import ChromaDBClient
+from app.infrastructure.vector_db.pgvector_client import PGVectorClient
 from app.utils.logger import logger
 
 
-class VectorDBRepository:
-    """Repository for vector database operations using ChromaDB."""
+class PGVectorDBRepository:
+    """Repository for vector database operations using PGVector."""
 
     def __init__(
         self,
         settings: Settings,
-        chroma_client: ChromaDBClient,
+        vectordb_client: PGVectorClient,
         embeddings_client: EmbeddingsClient,
     ) -> None:
         self._settings = settings
-        self._chroma_http_client = chroma_client.client
+        self._vectordb_client = vectordb_client
         self._embeddings = embeddings_client.client
 
-        # Ensure collection exists
-        chroma_client.get_or_create_collection(self._settings.chromadb_collection)
+        # Initialize Langchain PGVector Engine
+        self._engine = PGEngine.from_connection_string(
+            url=vectordb_client.connection_string,
+        )
+        try:
+            self._engine.init_vectorstore_table(
+                table_name=self._settings.pgvector_table,
+                vector_size=self._settings.get_vector_size(),
+                metadata_columns=list(PGVectorClient.METADATA_COLUMNS),
+            )
+        except Exception as e:
+            if "already exists" in str(e):
+                logger.info(f"PGVector table '{self._settings.pgvector_table}' already exists")
+            else:
+                logger.error(f"Error initializing PGVector table: {e}")
 
-        # Initialize Langchain Chroma wrapper
-        self._vdb = Chroma(
-            collection_name=self._settings.chromadb_collection,
-            embedding_function=self._embeddings,
-            client=self._chroma_http_client,
+        # Initialize Langchain PGVectorStore
+        self._vdb = PGVectorStore.create_sync(
+            engine=self._engine,
+            table_name=self._settings.pgvector_table,
+            schema_name=self._settings.pgvector_schema,
+            embedding_service=self._embeddings,
+            metadata_columns=[col["name"] for col in PGVectorClient.METADATA_COLUMNS],
         )
-        logger.info(
-            f"VectorDB repository initialized with collection "
-            f"'{self._settings.chromadb_collection}'"
-        )
+
+        logger.info(f"VectorDB repository initialized with table '{self._settings.pgvector_table}'")
 
     @property
-    def vdb(self) -> Chroma:
-        """Get the Langchain Chroma vector database."""
+    def vdb(self) -> PGVectorStore:
+        """Get the Langchain PGVectorStore vector database."""
         return self._vdb
 
     def add_documents(self, documents: list[Document]) -> list[str]:
@@ -53,8 +66,7 @@ class VectorDBRepository:
         # * Standard filter by document type
         filter = metadata_filter or {"tipo_documento": "documento-pdf"}
         # * Search for documents that at least have one space in their content
-        # TODO: Check how to avoid this default
-        where_document = where_document or {"$contains": " "}
+        where_document = where_document
 
         return self._vdb.similarity_search_with_score(
             query=query,
@@ -74,5 +86,9 @@ class VectorDBRepository:
         """Check if document exists by metadata filter."""
         # * Check if a document exist with the given title
         # TODO: Same document can be ingested multiple times using different names
-        results = self._vdb.get(where=title_filter)
-        return len(results.get("ids", [])) > 0
+        results = self._vdb.similarity_search(
+            query="",
+            k=1,
+            filter=title_filter,
+        )
+        return len(results) > 0

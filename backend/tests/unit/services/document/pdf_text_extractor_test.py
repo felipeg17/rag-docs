@@ -37,7 +37,7 @@ class TestPDFTextExtractor(unittest.TestCase):
         for page_num, doc in enumerate(documents):
             self.assertIsInstance(doc, Document)
             self.assertEqual(doc.metadata["titulo"], title)
-            self.assertEqual(doc.metadata["tipo-documento"], document_type)
+            self.assertEqual(doc.metadata["tipo_documento"], document_type)
             self.assertEqual(doc.metadata["pagina"], page_num)
 
     def test_extract_with_metadata_first_page_contains_expected_content(self):
@@ -65,7 +65,7 @@ class TestPDFTextExtractor(unittest.TestCase):
 
         # Assert - metadata should reflect custom values
         self.assertEqual(documents[0].metadata["titulo"], "Custom Title")
-        self.assertEqual(documents[0].metadata["tipo-documento"], "custom-type")
+        self.assertEqual(documents[0].metadata["tipo_documento"], "custom-type")
 
 
 if __name__ == "__main__":

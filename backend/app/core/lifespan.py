@@ -2,7 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.core.dependencies import get_chroma_client, get_embeddings_client, get_llm_client
+from app.core.config import VectorDBType, settings
+from app.core.dependencies import (
+    get_chroma_client,
+    get_embeddings_client,
+    get_llm_client,
+    get_pgvector_client,
+)
 from app.utils.logger import logger
 
 
@@ -15,10 +21,13 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Starting up RAG-docs application...")
 
-    # Verify ChromaDB connection
-    chroma_client = get_chroma_client()
-    heartbeat = chroma_client.heartbeat()
-    logger.info(f"ChromaDB heartbeat: {heartbeat}")
+    # Verify vector database connection based on config
+    if settings.vector_db_type == VectorDBType.PGVECTOR:
+        pgvector_client = get_pgvector_client()
+        logger.info(f"PGVector heartbeat: {pgvector_client.heartbeat()}")
+    else:
+        chroma_client = get_chroma_client()
+        logger.info(f"ChromaDB heartbeat: {chroma_client.heartbeat()}")
 
     # Verify llm model
     llm_client = get_llm_client()

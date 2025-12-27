@@ -42,7 +42,7 @@ class PDFTextExtractor:
                     page_content=page_text,
                     metadata={
                         "titulo": title,
-                        "tipo-documento": document_type,
+                        "tipo_documento": document_type,
                         "pagina": page_number,
                     },
                 )

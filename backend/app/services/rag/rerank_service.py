@@ -66,7 +66,7 @@ class RerankService:
             search_type="similarity",
             search_kwargs={
                 "k": k_results,
-                "filter": {"tipo-documento": {"$eq": document_type}},
+                "filter": {"tipo_documento": {"$eq": document_type}},
                 "where_document": {"$contains": " "},
             },
         )
