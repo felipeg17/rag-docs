@@ -5,6 +5,8 @@ metadata:
 data:
   CHROMADB_HOST: "chromadb"
   CHROMADB_PORT: "8000"
+  PGVECTOR_HOST: "pgvector"
+  PGVECTOR_PORT: "5432"
   HOST: "0.0.0.0"
   PORT: "8106"
   LANGCHAIN_PROJECT: "rag-docs-integration"
