@@ -36,7 +36,8 @@ class Settings(BaseSettings):
     embeddings_model: str = Field(default="text-embedding-ada-002")
 
     # Vector Database Selection
-    vector_db_type: Annotated[VectorDBType, Field(env="VECTOR_DB_TYPE")] = VectorDBType.PGVECTOR
+    # * Default to ChromaDB
+    vector_db_type: Annotated[VectorDBType, Field(env="VECTOR_DB_TYPE")] = VectorDBType.CHROMA
 
     # ChromaDB Configuration
     chromadb_host: Annotated[str, Field(env="CHROMADB_HOST")] = "localhost"

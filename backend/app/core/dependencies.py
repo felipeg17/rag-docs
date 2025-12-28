@@ -55,14 +55,14 @@ def get_pgvector_client() -> PGVectorClient:
 
 @lru_cache()
 def get_vector_db_repository(
-    chroma_client: Annotated[ChromaDBClient, Depends(get_chroma_client)],
-    pgvector_client: Annotated[PGVectorClient, Depends(get_pgvector_client)],
     embeddings_client: Annotated[EmbeddingsClient, Depends(get_embeddings_client)],
 ) -> VectorDBRepository | PGVectorDBRepository:
     """Get vector database repository (Chroma or PGVector based on settings)"""
     if settings.vector_db_type == VectorDBType.PGVECTOR:
+        pgvector_client = get_pgvector_client()
         return PGVectorDBRepository(settings, pgvector_client, embeddings_client)
     else:
+        chroma_client = get_chroma_client()
         return VectorDBRepository(settings, chroma_client, embeddings_client)
 
 

@@ -104,7 +104,7 @@ jobs:
           eval $(minikube -p minikube docker-env)
 
           # Build images directly in Minikube
-          docker build -t chromadb-init:${IMAGE_TAG} -f k8s/base/vectordb/Dockerfile k8s/base/vectordb/
+          docker build -t chromadb-init:${IMAGE_TAG} -f k8s/base/vectordb/chroma/Dockerfile k8s/base/vectordb/chroma
           docker build -t rag-docs-backend:${IMAGE_TAG} -f backend/Dockerfile backend
           docker build -t rag-docs-frontend:${IMAGE_TAG} -f frontend/Dockerfile frontend
 
@@ -155,7 +155,9 @@ jobs:
       - name: Run Behave integration tests
         env:
           BACKEND_URL: http://localhost:8106
-          CHROMADB_URL: http://localhost:9001
+          CHROMADB_HOST: localhost
+          CHROMADB_PORT: 9001
+          VECTOR_DB_TYPE: chroma
         run: |
           cd backend/tests/behave
           uv run behave --format=pretty --format=json --outfile=behave-results.json
