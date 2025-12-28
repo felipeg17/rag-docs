@@ -155,7 +155,8 @@ jobs:
       - name: Run Behave integration tests
         env:
           BACKEND_URL: http://localhost:8106
-          CHROMADB_URL: http://localhost:9001
+          CHROMADB_HOST: localhost
+          CHROMADB_PORT: 9001
           VECTOR_DB_TYPE: chroma
         run: |
           cd backend/tests/behave
