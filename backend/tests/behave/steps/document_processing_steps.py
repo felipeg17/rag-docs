@@ -12,8 +12,9 @@ from app.core.dependencies import get_chroma_client, get_pgvector_client
 
 @given("the vector database is running")
 def step_impl_vector_db_running(context: Context) -> None:
-    if settings.vector_db_type == VectorDBType.PGVECTOR and not get_pgvector_client().heartbeat():
-        raise AssertionError("PGVector not accessible through backend")
+    if settings.vector_db_type == VectorDBType.PGVECTOR:
+        if not get_pgvector_client().heartbeat():
+            raise AssertionError("PGVector not accessible through backend")
     else:
         if not get_chroma_client().heartbeat():
             raise AssertionError("ChromaDB not accessible through backend")
