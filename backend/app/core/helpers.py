@@ -27,7 +27,7 @@ def _get_gcp_project_id() -> str:
         return response.text
 
     except requests.RequestException:
-        logger.info("Not running in GCP environment, trying env var...")
+        logger.info("Not running in GCP environment, retrieving project_id using env var...")
         return os.getenv("PROJECT_ID", "")
 
     except Exception as e:
