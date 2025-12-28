@@ -104,7 +104,7 @@ jobs:
           eval $(minikube -p minikube docker-env)
 
           # Build images directly in Minikube
-          docker build -t chromadb-init:${IMAGE_TAG} -f k8s/base/vectordb/Dockerfile k8s/base/vectordb/
+          docker build -t chromadb-init:${IMAGE_TAG} -f k8s/base/vectordb/Dockerfile k8s/base/vectordb/chroma
           docker build -t rag-docs-backend:${IMAGE_TAG} -f backend/Dockerfile backend
           docker build -t rag-docs-frontend:${IMAGE_TAG} -f frontend/Dockerfile frontend
 
