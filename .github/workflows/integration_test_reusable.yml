@@ -156,6 +156,7 @@ jobs:
         env:
           BACKEND_URL: http://localhost:8106
           CHROMADB_URL: http://localhost:9001
+          VECTOR_DB_TYPE: chroma
         run: |
           cd backend/tests/behave
           uv run behave --format=pretty --format=json --outfile=behave-results.json
