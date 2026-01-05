@@ -46,15 +46,16 @@ class Settings(BaseSettings):
     chromadb_database: str = Field(default="rag-database")
     chromadb_collection: str = Field(default="rag-docs")
 
-    # PGVector Configuration
+    # Postgres Configuration
     # * Based on: https://docs.langchain.com/oss/python/integrations/vectorstores/pgvectorstore
     pgvector_host: Annotated[str, Field(env="PGVECTOR_HOST")] = "localhost"
     pgvector_port: Annotated[int, Field(env="PGVECTOR_PORT")] = 6024
     pgvector_user: Annotated[str, Field(env="PGVECTOR_USER")] = "langchain"
     pgvector_password: Annotated[str, Field(env="PGVECTOR_PASSWORD")] = "langchain"
     pgvector_database: Annotated[str, Field(env="PGVECTOR_DATABASE")] = "langchain"
-    pgvector_schema: Annotated[str, Field(env="PGVECTOR_SCHEMA")] = "public"
+    pgvector_schema: Annotated[str, Field(env="PGVECTOR_SCHEMA")] = "vector"
     pgvector_table: Annotated[str, Field(env="PGVECTOR_TABLE")] = "rag_documents"
+    db_schema: Annotated[str, Field(env="DB_SCHEMA")] = "app"
 
     # RAG Configuration
     default_chunk_size: int = Field(default=800)
