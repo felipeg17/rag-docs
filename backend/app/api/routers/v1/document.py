@@ -1,10 +1,18 @@
+import base64
+import time
 from typing import Annotated
-from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Path, status
 from fastapi.responses import JSONResponse
 
-from app.core.dependencies import IngestionServiceDep, QAServiceDep, RerankServiceDep, VectorDBDep
+from app.core.dependencies import (
+    DocumentServiceDep,
+    IngestionServiceDep,
+    InteractionServiceDep,
+    QAServiceDep,
+    RerankServiceDep,
+    VectorDBDep,
+)
 from app.models.requests.document_request import DocumentIngestRequest
 from app.models.requests.search_request import DocumentSearchRequest, QuestionRequest
 from app.models.responses.document_response import DocumentIngestResponse
@@ -28,37 +36,49 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
     },
 )
 async def ingest_document(
-    request: DocumentIngestRequest, ingestion_service: IngestionServiceDep, vdb_repo: VectorDBDep
+    request: DocumentIngestRequest,
+    doc_service: DocumentServiceDep,
+    ingestion_service: IngestionServiceDep,
+    vdb_repo: VectorDBDep,
 ):
     try:
+        # Decode PDF content (bytes) for hashing and metadata
+        pdf_content = base64.b64decode(request.document_content)
+
+        # Create/retrieve document in persistent storage (with deduplication)
+        document = doc_service.create_document(
+            title=request.title,
+            document_type=request.document_type or "documento-pdf",
+            content=pdf_content,
+            file_size_bytes=len(pdf_content),
+        )
+
         # Check if document already exists
         document_exists = vdb_repo.check_document_exists({"titulo": request.title})
 
-        if document_exists:
-            # TODO: When have persistent storage for documents retrieve document_id
-            document_id = str(uuid4())
-
         # Process document if not present
         if not document_exists:
-            document_id = str(uuid4())
-            logger.info(f"Ingesting document: {request.title} (document_id={document_id})")
+            logger.info(f"Ingesting document into vector DB: {request.title} (id={document.id})")
             # ? What to do when it returns False?
-            ingestion_result_process = ingestion_service.ingest_document(
+            ingestion_result = ingestion_service.ingest_document(
                 base64_content=request.document_content,
                 title=request.title,
                 document_type=request.document_type or "documento-pdf",
                 splitting_method="recursive",  # TODO: Make this configurable
             )
 
-            if not ingestion_result_process:
+            if not ingestion_result:
                 logger.error(f"Failed to ingest document: {request.title}")
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Failed to ingest document: {request.title}",
                 )
+        else:
+            logger.info(f"Document already exists in vector DB: {request.title} (id={document.id})")
 
+        # Response with real document ID from persistent database
         response_data = DocumentIngestResponse(
-            document_id=document_id,
+            document_id=str(document.id),
             title=request.title,
             status="updated" if document_exists else "created",
             message=f"Document '{'updated' if document_exists else 'created'}' successfully",
@@ -69,7 +89,7 @@ async def ingest_document(
         return JSONResponse(
             status_code=response_status,
             content=response_data.model_dump(),
-            headers={"Location": f"/api/v1/documents/{document_id}"}
+            headers={"Location": f"/api/v1/documents/{document.id}"}
             if not document_exists
             else None,
         )
@@ -97,6 +117,8 @@ async def ingest_document(
 )
 async def search_document(
     document_id: Annotated[str, Path(description="Document title")],
+    doc_service: DocumentServiceDep,
+    interaction_service: InteractionServiceDep,
     request: DocumentSearchRequest,
     vdb_repo: VectorDBDep,
 ):
@@ -108,11 +130,13 @@ async def search_document(
             )
 
         # Perform similarity search
+        start_time = time.time()
         vdb_results = vdb_repo.similarity_search_with_score(
             query=request.query,
             k=request.k_results,
             metadata_filter=request.metadata_filter,
         )
+        execution_time_ms = int((time.time() - start_time) * 1000)
 
         # Parse results (Document, score) tuples
         search_items = [
@@ -124,6 +148,18 @@ async def search_document(
             for doc, score in vdb_results
         ]
 
+        # Log search interaction - basically stores the search and results to the database
+        document = doc_service.get_by_title(document_id)
+        if document:
+            interaction_service.log_search(
+                document_id=document.id,
+                query_text=request.query,
+                results=vdb_results,
+                k_results=request.k_results,
+                execution_time_ms=execution_time_ms,
+            )
+
+        # Return search results
         return DocumentSearchResponse(
             query=request.query,
             results=search_items,
@@ -153,6 +189,8 @@ async def search_document(
 )
 async def ask_question(
     document_id: Annotated[str, Path(description="Document title")],
+    doc_service: DocumentServiceDep,
+    interaction_service: InteractionServiceDep,
     request: QuestionRequest,
     qa_service: QAServiceDep,
     rerank_service: RerankServiceDep,
@@ -166,45 +204,71 @@ async def ask_question(
             )
 
         # Select service based on strategy
+        start_time = time.time()
         if request.strategy == "rerank":
             # Rerank strategy - returns only the answer
             answer = rerank_service.answer_question(
                 query=request.question,
-                document_type="documento-pdf",  # TODO: remove the hardcoded
+                document_type="documento-pdf",  # TODO issue #15: remove the hardcoded value
                 k_results=request.k_results,
             )
+            source_docs = []
 
-            return QuestionAnswerResponse(
-                question=request.question,
-                answer=answer,
-                document_id=document_id,
-                strategy="rerank",
-                source_documents=[],  # Rerank service doesn't return sources
-            )
+            # return QuestionAnswerResponse(
+            #     question=request.question,
+            #     answer=answer,
+            #     document_id=document_id,
+            #     strategy="rerank",
+            #     source_documents=[],  # Rerank service doesn't return sources
+            # )
         else:
             # Standard strategy - returns answer + sources
             qa_result = qa_service.answer_question(
                 query=request.question,
-                document_type="documento-pdf",  # TODO: remove the hardcoded
+                document_type="documento-pdf",  # TODO issue #15: remove the hardcoded value
                 k_results=request.k_results,
             )
+            answer = qa_result.get("result", "")
 
             source_docs = [
                 SourceDocument(
-                    page_content=doc.page_content,
-                    metadata=doc.metadata,
+                    page_content=source_doc.page_content,
+                    metadata=source_doc.metadata,
                     score=None,  # Standard QA doesn't provide scores
                 )
-                for doc in qa_result.get("source_documents", [])
+                for source_doc in qa_result.get("source_documents", [])
             ]
 
-            return QuestionAnswerResponse(
+            # return QuestionAnswerResponse(
+            #     question=request.question,
+            #     answer=qa_result.get("result"),
+            #     document_id=document_id,
+            #     strategy="standard",
+            #     source_documents=source_docs,
+            # )
+
+        execution_time_ms = int((time.time() - start_time) * 1000)
+
+        # Log qa interaction - basically stores the qa results to the database
+        document = doc_service.get_by_title(document_id)
+        if document:
+            interaction_service.log_qa(
+                document_id=document.id,
                 question=request.question,
-                answer=qa_result.get("result"),
-                document_id=document_id,
-                strategy="standard",
-                source_documents=source_docs,
+                answer=answer,
+                strategy=request.strategy,
+                k_results=request.k_results,
+                execution_time_ms=execution_time_ms,
             )
+
+        # Return answer of QA
+        return QuestionAnswerResponse(
+            question=request.question,
+            answer=answer,
+            document_id=document_id,
+            strategy=request.strategy,
+            source_documents=source_docs,
+        )
 
     except HTTPException:
         raise
