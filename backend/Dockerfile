@@ -18,6 +18,7 @@ COPY --from=builder /ms/.venv /ms/.venv
 
 COPY app /ms/app
 COPY main.py /ms/
+COPY alembic.ini /ms/
 COPY backend.env /ms/.env
 
 # PYTHON PATH
