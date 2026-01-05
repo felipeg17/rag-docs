@@ -22,7 +22,7 @@ class TestHealthRouter(unittest.TestCase):
         response = self.client.get("/health")
 
         # Assert
-        self.assertEqual(response.json(), {"status": "healthy"})
+        self.assertEqual(response.json(), {"status": "healthy", "database": "connected"})
 
 
 if __name__ == "__main__":
