@@ -15,7 +15,7 @@ profiles:
         path: /requires/0
         value:
           path: k8s/base/ollama
-  - name: pgvector
+  - name: chroma
   - name: ci
     activation:
       - env: CI=true
