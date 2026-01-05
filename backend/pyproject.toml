@@ -47,6 +47,8 @@ dependencies = [
     "langchain-ollama>=0.3.4",
     # GCP
     "google-cloud-secret-manager==2.20.0",
+    # Database
+    "alembic==1.14.0",
 ]
 
 [project.optional-dependencies]
