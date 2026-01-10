@@ -1,12 +1,16 @@
 import json
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 from langchain.schema import Document
 
 from app.core.dependencies import (
+    get_db_session,
+    get_document_service,
     get_ingestion_service,
+    get_interaction_service,
     get_qa_service,
     get_rerank_service,
     get_vector_db_repository,
@@ -44,12 +48,18 @@ class TestProcessDocumentController(unittest.TestCase):
         self.mock_vdb_repository = MagicMock()
         self.mock_qa_service = MagicMock()
         self.mock_rerank_service = MagicMock()
+        self.mock_document_service = MagicMock()
+        self.mock_interaction_service = MagicMock()
+        self.mock_db_session = MagicMock()
 
         # Override dependencies with lambdas (FastAPI requires callables)
         app.dependency_overrides[get_ingestion_service] = lambda: self.mock_ingestion_service
         app.dependency_overrides[get_vector_db_repository] = lambda: self.mock_vdb_repository
         app.dependency_overrides[get_qa_service] = lambda: self.mock_qa_service
         app.dependency_overrides[get_rerank_service] = lambda: self.mock_rerank_service
+        app.dependency_overrides[get_document_service] = lambda: self.mock_document_service
+        app.dependency_overrides[get_interaction_service] = lambda: self.mock_interaction_service
+        app.dependency_overrides[get_db_session] = lambda: self.mock_db_session
 
         # Create test client
         self.client = TestClient(app)
@@ -60,6 +70,11 @@ class TestProcessDocumentController(unittest.TestCase):
 
     def test_document_ingestion_new_document(self):
         # Arrange
+        mock_doc = Mock()
+        mock_doc.id = uuid4()
+        mock_doc.title = "test-document"
+        self.mock_document_service.create_document.return_value = mock_doc
+
         # Document doesn't exist, so it will be created
         self.mock_vdb_repository.check_document_exists.return_value = False
         self.mock_ingestion_service.ingest_document.return_value = True
@@ -82,9 +97,16 @@ class TestProcessDocumentController(unittest.TestCase):
         self.assertEqual(response_data["title"], "test-document")
         self.mock_ingestion_service.ingest_document.assert_called_once()
         self.mock_vdb_repository.check_document_exists.assert_called_once()
+        self.mock_document_service.create_document.assert_called_once()
 
     def test_document_ingestion_existing_document(self):
         # Arrange
+        # Mock document service to return a document (even for existing)
+        mock_doc = Mock()
+        mock_doc.id = uuid4()
+        mock_doc.title = "existing-document"
+        self.mock_document_service.create_document.return_value = mock_doc
+
         # Document already exists, so it will return 200 and "updated" status
         self.mock_vdb_repository.check_document_exists.return_value = True
 
@@ -106,6 +128,7 @@ class TestProcessDocumentController(unittest.TestCase):
         # Should NOT call ingestion service for existing documents
         self.mock_ingestion_service.ingest_document.assert_not_called()
         self.mock_vdb_repository.check_document_exists.assert_called_once()
+        self.mock_document_service.create_document.assert_called_once()
 
     def test_document_ingestion_missing_parameters(self):
         # Arrange
@@ -124,6 +147,12 @@ class TestProcessDocumentController(unittest.TestCase):
     def test_document_ingestion_service_error(self):
         """Test document ingestion endpoint handles service errors."""
         # Arrange
+        # Mock document service to return a document
+        mock_doc = Mock()
+        mock_doc.id = uuid4()
+        mock_doc.title = "test-document"
+        self.mock_document_service.create_document.return_value = mock_doc
+
         self.mock_vdb_repository.check_document_exists.return_value = False
         self.mock_ingestion_service.ingest_document.side_effect = Exception("Service error")
 
@@ -143,6 +172,11 @@ class TestProcessDocumentController(unittest.TestCase):
 
     def test_vdb_search_returns_results(self):
         # Arrange - Convert golden response to Document objects with scores
+        # Mock document retrieval for interaction logging
+        mock_doc = Mock()
+        mock_doc.id = uuid4()
+        self.mock_document_service.get_by_title.return_value = mock_doc
+
         search_results = []
         for result_data in self.vdb_search_response["results"]:
             doc = Document(
@@ -182,8 +216,16 @@ class TestProcessDocumentController(unittest.TestCase):
         self.assertIn("metadata", first_result)
         self.assertIsInstance(first_result["score"], float)
 
+        # Verify interaction logging was called
+        self.mock_interaction_service.log_search.assert_called_once()
+
     def test_qa_endpoint_success(self):
         # Arrange - Use golden QA response
+        # Mock document retrieval for interaction logging
+        mock_doc = Mock()
+        mock_doc.id = uuid4()
+        self.mock_document_service.get_by_title.return_value = mock_doc
+
         source_docs = []
         for doc_data in self.qa_response["source_documents"]:
             doc = Document(
@@ -230,6 +272,9 @@ class TestProcessDocumentController(unittest.TestCase):
         self.assertIsInstance(response_data["source_documents"], list)
         self.assertEqual(len(response_data["source_documents"]), 4)
 
+        # Verify interaction logging was called
+        self.mock_interaction_service.log_qa.assert_called_once()
+
     def test_qa_endpoint_service_error_returns_500(self):
         # Arrange
         self.mock_vdb_repository.check_document_exists.return_value = True
@@ -252,6 +297,11 @@ class TestProcessDocumentController(unittest.TestCase):
 
     def test_rerank_qa_endpoint_success(self):
         # Arrange - Use golden rerank QA response
+        # Mock document retrieval for interaction logging
+        mock_doc = Mock()
+        mock_doc.id = uuid4()
+        self.mock_document_service.get_by_title.return_value = mock_doc
+
         # answer_question returns the answer string directly
         answer_text = self.rerank_qa_response["response"]["content"]
         self.mock_rerank_service.answer_question.return_value = answer_text
@@ -287,6 +337,9 @@ class TestProcessDocumentController(unittest.TestCase):
         self.assertGreater(len(response_data["answer"]), 0)
         # Rerank doesn't return source documents
         self.assertEqual(len(response_data["source_documents"]), 0)
+
+        # Verify interaction logging was called
+        self.mock_interaction_service.log_qa.assert_called_once()
 
     def test_rerank_qa_endpoint_service_error(self):
         # Arrange
