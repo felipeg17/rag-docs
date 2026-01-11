@@ -28,6 +28,25 @@ spec:
               value: "langchain"
             - name: POSTGRES_DB
               value: "langchain"
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U langchain -d langchain
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U langchain -d langchain
+            initialDelaySeconds: 5
+            periodSeconds: 120
           resources:
             requests:
               memory: "512Mi"
