@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.core.config import VectorDBType, settings
 from app.core.dependencies import (
     get_chroma_client,
+    get_db_client,
     get_embeddings_client,
     get_llm_client,
     get_pgvector_client,
@@ -20,6 +21,10 @@ async def lifespan(app: FastAPI):
     Handles startup and shutdown events for proper resource management.
     """
     logger.info("Starting up RAG-docs application...")
+
+    # Verify database connection
+    if get_db_client().heartbeat():
+        logger.info("Database connection successful")
 
     # Verify vector database connection based on config
     if settings.vector_db_type == VectorDBType.PGVECTOR:

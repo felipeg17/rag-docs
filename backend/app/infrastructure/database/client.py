@@ -57,5 +57,4 @@ class DatabaseClient:
     def dispose(self) -> None:
         """Dispose database engine."""
         self._engine.dispose()
-
-    logger.info("Database engine disposed")
+        logger.info("Database engine disposed")
