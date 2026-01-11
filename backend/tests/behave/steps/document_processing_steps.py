@@ -84,7 +84,7 @@ def step_impl_create_document_vector_db(context: Context, pdf_title: str) -> Non
     assert status_value is not None, "No status in upload response"
 
 
-@then("the document record should be retrivable from the persistent database")
+@then("the document record should be retrievable from the persistent database")
 def step_impl_retrieve_document_persistent_db(context: Context) -> None:
     db_client = context.db_client
     session = db_client.get_session()

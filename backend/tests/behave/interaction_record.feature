@@ -6,4 +6,4 @@ Feature: Create an interaction record
     Scenario:
         Given the persistent database is running
         When a record of an interaction is created in the persistent database
-        Then the interaction record should be retrivable from the persistent database
+        Then the interaction record should be retrievable from the persistent database

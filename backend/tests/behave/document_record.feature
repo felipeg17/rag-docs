@@ -6,4 +6,4 @@ Feature: Create a document record
     Scenario:
         Given the persistent database is running
         When a record of the document with title "test-document" is created in the persistent database
-        Then the document record should be retrivable from the persistent database
+        Then the document record should be retrievable from the persistent database

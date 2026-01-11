@@ -39,7 +39,7 @@ def step_impl_create_interaction_record(context: Context) -> None:
     context.interaction_id = str(interaction.id)
 
 
-@then("the interaction record should be retrivable from the persistent database")
+@then("the interaction record should be retrievable from the persistent database")
 def step_impl_retrieve_interaction_persistent_db(context: Context) -> None:
     db_client = context.db_client
     session = db_client.get_session()
