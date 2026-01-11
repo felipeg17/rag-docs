@@ -7,7 +7,17 @@ from behave import given, then, when  # type: ignore
 from behave.runner import Context  # type: ignore
 
 from app.core.config import VectorDBType, settings
-from app.core.dependencies import get_chroma_client, get_pgvector_client
+from app.core.dependencies import get_chroma_client, get_db_client, get_pgvector_client
+from app.infrastructure.database.repositories.document_repository import DocumentRepository
+
+
+@given("the persistent database is running")
+def step_impl_persistent_db_running(context: Context) -> None:
+    db_client = get_db_client()
+    if not db_client.heartbeat():
+        raise AssertionError("PostgreSQL not accessible through backend")
+
+    context.db_client = db_client
 
 
 @given("the vector database is running")
@@ -56,7 +66,15 @@ def step_impl_upload_document_vector_db(context: Context, pdf_title: str) -> Non
     assert response.status_code in [200, 201], f"Document upload failed: {response.status_code}"
 
     context.upload_response = response.json()
-    context.pdf_title = pdf_title
+    context.document_id = context.upload_response.get("document_id")
+    context.pdf_title = context.upload_response.get("title")
+
+
+@then("a document record is created in the persistent database")
+def step_impl_create_document_persistent_db(context: Context) -> None:
+    # status=True means newly created (201), status=False means already exists (200)
+    status_value = context.upload_response.get("status")
+    assert status_value is not None, "No status in upload response"
 
 
 @then('document with title "{pdf_title}" is created in the vector database')
@@ -66,7 +84,20 @@ def step_impl_create_document_vector_db(context: Context, pdf_title: str) -> Non
     assert status_value is not None, "No status in upload response"
 
 
-@then('the document with title "{pdf_title}" is retrievable from the vector database')
+@then("the document record should be retrivable from the persistent database")
+def step_impl_retrieve_document_persistent_db(context: Context) -> None:
+    db_client = context.db_client
+    session = db_client.get_session()
+    try:
+        doc_repo = DocumentRepository(session)
+        document = doc_repo.get_by_id(context.document_id)
+        assert document is not None, "Document not found in persistent database"
+        assert document.title == context.pdf_title
+    finally:
+        session.close()
+
+
+@then('the document with title "{pdf_title}" should be retrievable from the vector database')
 def step_impl_retrieve_document_from_vdb(context: Context, pdf_title: str) -> None:
     """Verify document can be retrieved from vector database."""
     payload = {

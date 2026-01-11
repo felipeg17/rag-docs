@@ -1,6 +1,7 @@
 from typing import Any
 from uuid import UUID
 
+from app.infrastructure.database.models import QAInteraction, SearchInteraction
 from app.infrastructure.database.repositories.interaction_repository import (
     QAInteractionRepository,
     SearchInteractionRepository,
@@ -26,14 +27,14 @@ class InteractionService:
         results: list[Any],  # Search results (tuples of Document, score)
         k_results: int,
         execution_time_ms: int | None = None,
-    ) -> None:
+    ) -> SearchInteraction | None:
         """Log a search interaction."""
         try:
             # Calculate metrics from results
             results_count = len(results)
             avg_score = self._calculate_avg_score(results) if results else None
 
-            self._search_repo.log_search(
+            search_interaction = self._search_repo.log_search(
                 document_id=document_id,
                 query_text=query_text,
                 k_results=k_results,
@@ -42,9 +43,13 @@ class InteractionService:
                 execution_time_ms=execution_time_ms,
             )
 
-            logger.debug(f"Logged search interaction for document {document_id}")
+            logger.info(
+                f"Logged search interaction {search_interaction.id} for document {document_id}"
+            )
+            return search_interaction
         except Exception as e:
             logger.error(f"Failed to log search interaction: {e}")
+            return None
 
     def log_qa(
         self,
@@ -55,10 +60,10 @@ class InteractionService:
         k_results: int,
         llm_model: str | None = None,
         execution_time_ms: int | None = None,
-    ) -> None:
+    ) -> QAInteraction | None:
         """Log a Q&A interaction."""
         try:
-            self._qa_repo.log_qa(
+            qa_interaction = self._qa_repo.log_qa(
                 document_id=document_id,
                 question=question,
                 answer=answer,
@@ -68,9 +73,11 @@ class InteractionService:
                 execution_time_ms=execution_time_ms,
             )
 
-            logger.debug(f"Logged Q&A interaction for document {document_id}")
+            logger.info(f"Logged Q&A interaction {qa_interaction.id} for document {document_id}")
+            return qa_interaction
         except Exception as e:
             logger.error(f"Failed to log Q&A interaction: {e}")
+            return None
 
     @staticmethod
     def _calculate_avg_score(results: list[tuple[Any, float]]) -> float:

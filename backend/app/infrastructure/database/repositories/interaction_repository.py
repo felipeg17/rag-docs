@@ -1,5 +1,7 @@
+from typing import Sequence
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.models import QAInteraction, SearchInteraction
@@ -70,3 +72,12 @@ class QAInteractionRepository(BaseRepository[QAInteraction]):
             session_id=session_id,
             user_id=user_id,
         )
+
+    def get_by_document_id(self, document_id: UUID) -> Sequence[QAInteraction]:
+        """Retrieve all QA interactions for a specific document."""
+        query = (
+            select(QAInteraction)
+            .where(QAInteraction.document_id == document_id)
+            .order_by(QAInteraction.updated_at.desc())
+        )
+        return self._session.execute(query).scalars().all()
