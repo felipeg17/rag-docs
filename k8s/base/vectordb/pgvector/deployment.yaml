@@ -39,14 +39,6 @@ spec:
             timeoutSeconds: 3
             successThreshold: 1
             failureThreshold: 3
-          livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - pg_isready -U langchain -d langchain
-            initialDelaySeconds: 5
-            periodSeconds: 120
           resources:
             requests:
               memory: "512Mi"

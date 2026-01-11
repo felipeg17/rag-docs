@@ -127,7 +127,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           CI: true
         run: |
-          skaffold run -p ci --default-repo="" --tag=${IMAGE_TAG}
+          skaffold run -p ci,chroma --default-repo="" --tag=${IMAGE_TAG}
 
       - name: Wait for deployments to be ready
         run: |
