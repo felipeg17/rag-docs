@@ -1,0 +1,23 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: ollama
+
+manifests:
+  rawYaml:
+    - persistent_volume.yaml
+    - persistent_volume_claim.yaml
+    - deployment.yaml
+    - service.yaml
+
+deploy:
+  kubectl: {}
+
+portForward:
+  - resourceType: service
+    resourceName: ollama
+    port: 11434
+    localPort: 11435
+
+profiles:
+  - name: local

@@ -1,0 +1,15 @@
+# Code Owners for rag-docs
+
+- @felipeg17
+
+# Backend
+
+/backend/ @felipeg17
+
+# Frontend
+
+/front/ @felipeg17
+
+# Infrastructure
+
+/k8s/ @felipeg17

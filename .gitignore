@@ -4,8 +4,6 @@
 
 # venv
 .venv
-v_rag/
-
 
 
 #.env
@@ -16,12 +14,10 @@ v_rag/
 !*.env.template
 
 
-
 # files
 *.pyc
 USE.md
 TODO.md
-test_bedrock.py
 
 
 # folders
@@ -36,5 +32,4 @@ documents/
 # git
 .gitignore
 .git
-
 
