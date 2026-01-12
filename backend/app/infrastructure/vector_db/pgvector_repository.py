@@ -27,6 +27,7 @@ class PGVectorDBRepository:
         try:
             self._engine.init_vectorstore_table(
                 table_name=self._settings.pgvector_table,
+                schema_name=self._settings.pgvector_schema,
                 vector_size=self._settings.get_vector_size(),
                 metadata_columns=list(PGVectorClient.METADATA_COLUMNS),
             )

@@ -70,7 +70,7 @@ class QAService:
             llm=self._llm,
             retriever=retriever,
             return_source_documents=True,
-            chain_type="stuff",  # TODO: Check with other chain types
+            chain_type="stuff",  # TODO issue #16: Check with other chain types
             chain_type_kwargs={"prompt": qa_prompt},
         )
 

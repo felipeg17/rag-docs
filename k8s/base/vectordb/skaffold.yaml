@@ -4,13 +4,14 @@ metadata:
   name: vectordb
 
 requires:
-  - path: ./chroma
+  - path: ./pgvector
 
 profiles:
   - name: local
-  - name: pgvector
+  - name: chroma
     patches:
-      - op: replace
-        path: /requires/0/path
-        value: ./pgvector
+      - op: add
+        path: /requires/0
+        value:
+          path: ./chroma
   - name: ci

@@ -11,4 +11,4 @@ data:
   PORT: "8106"
   LANGCHAIN_PROJECT: "rag-docs-integration"
   OLLAMA_BASE_URL: "http://ollama:11434"
-  VECTOR_DB_TYPE: "chroma" # This will set the vectordb for the backend in k8s
+  VECTOR_DB_TYPE: "chroma"
