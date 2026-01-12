@@ -1,4 +1,4 @@
-# RAG - DOCS
+# rag-docs
 
 ## Requirements
 

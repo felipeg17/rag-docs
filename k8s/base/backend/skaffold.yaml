@@ -12,7 +12,7 @@ build:
       template: "{{.IMAGE_TAG}}"
   artifacts:
     - image: rag-docs-backend
-      context: ../../..
+      context: ../../../backend
       docker:
         dockerfile: Dockerfile
 
