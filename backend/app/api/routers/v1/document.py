@@ -149,6 +149,7 @@ async def search_document(
         ]
 
         # Log search interaction - basically stores the search and results to the database
+        # TODO issue #20: implement a method that garantees unique document results
         document = doc_service.get_by_title(document_id)
         if document:
             interaction_service.log_search(
@@ -214,13 +215,6 @@ async def ask_question(
             )
             source_docs = []
 
-            # return QuestionAnswerResponse(
-            #     question=request.question,
-            #     answer=answer,
-            #     document_id=document_id,
-            #     strategy="rerank",
-            #     source_documents=[],  # Rerank service doesn't return sources
-            # )
         else:
             # Standard strategy - returns answer + sources
             qa_result = qa_service.answer_question(
@@ -238,14 +232,6 @@ async def ask_question(
                 )
                 for source_doc in qa_result.get("source_documents", [])
             ]
-
-            # return QuestionAnswerResponse(
-            #     question=request.question,
-            #     answer=qa_result.get("result"),
-            #     document_id=document_id,
-            #     strategy="standard",
-            #     source_documents=source_docs,
-            # )
 
         execution_time_ms = int((time.time() - start_time) * 1000)
 
