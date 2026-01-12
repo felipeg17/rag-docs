@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     image: ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}
     container_name: ${BACKEND_IMAGE_NAME}_${IMAGE_TAG}
+    image: ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}
+    container_name: ${BACKEND_IMAGE_NAME}_${IMAGE_TAG}
     network_mode: "host"
     env_file:
       - backend/backend.env
