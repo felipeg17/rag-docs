@@ -5,6 +5,7 @@ This directory contains pre-recorded responses from external services for determ
 ## Purpose
 
 Instead of calling real APIs during unit tests, we:
+
 1. **Record** real API responses once using the generator script
 2. **Store** them as JSON files (golden responses)
 3. **Replay** them in unit tests for fast, deterministic, offline testing
@@ -24,6 +25,7 @@ Instead of calling real APIs during unit tests, we:
 ## Generating Golden Responses
 
 **Prerequisites:**
+
 - ChromaDB must be running
 - `ros-intro.pdf` must be ingested in ChromaDB (use POST /api/v1/document)
 - `.env` file must have valid API keys (OPENAI_API_KEY, COHERE_API_KEY)
@@ -36,6 +38,7 @@ python tests/fixtures/generate_golden_responses.py
 ```
 
 The script will:
+
 1. Connect to real ChromaDB with ingested documents
 2. Query real OpenAI embeddings and LLM
 3. Query real Cohere reranking
@@ -44,14 +47,16 @@ The script will:
 ## When to Regenerate
 
 Regenerate golden responses when:
+
 - External service APIs change
 - Settings change (model, temperature, chunk size, etc.)
 - You want to test with different data
 - Golden response files are missing or corrupted
 
 **Important:** Golden responses are tied to current settings. If you change:
+
 - `openai_model`
-- `openai_temperature`
+- `llm_temperature`
 - `default_chunk_size`
 - `default_chunk_overlap`
 - `cohere_model`
@@ -85,11 +90,13 @@ Each golden response file contains:
 ## Testing Workflow
 
 1. **Generate golden responses** (one time or when settings change):
+
    ```bash
    python tests/fixtures/generate_golden_responses.py
    ```
 
 2. **Run unit tests** (uses golden responses, no API calls):
+
    ```bash
    python -m unittest discover -s tests/unit -v
    ```
