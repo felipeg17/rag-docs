@@ -151,7 +151,7 @@ jobs:
           kubectl port-forward svc/rag-docs-backend 8106:8106 &
           kubectl port-forward svc/chromadb 9001:8000 &
           kubectl port-forward svc/pgvector 6025:5432 &
-          sleep 10
+          sleep 15
 
           # Verify port forwards
           curl -f --max-time 10 http://localhost:8106/health || (echo "Backend health check failed" && exit 1)

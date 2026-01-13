@@ -4,7 +4,7 @@ from typing import Annotated
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.core.helpers import VectorDBType, get_secret
+from app.core.helpers import VectorDBType, _get_gcp_project_id, get_secret
 
 
 class Settings(BaseSettings):
@@ -12,6 +12,9 @@ class Settings(BaseSettings):
 
     # LLM configuration
     local_llm: Annotated[bool, Field(env="LOCAL_LLM")] = False
+
+    # Cloud llm configuration
+    use_vertex_ai: Annotated[bool, Field(env="USE_VERTEX_AI")] = False
 
     # Ollama Configuration
     # ollama_model: str = Field(default="llama3.2")
@@ -22,18 +25,28 @@ class Settings(BaseSettings):
         "nomic-embed-text:v1.5"
     )
 
+    # Vertex AI Configuration
+    vertex_ai_model: str = Field(default="gemini-2.5-flash")
+    vertex_ai_location: str = Field(default="us-central1")
+
+    @property
+    def vertex_ai_project(self) -> str:
+        return _get_gcp_project_id()
+
     # OpenAI Configuration
     @property
     def openai_api_key(self) -> str:
         return get_secret("openai-api-key")
 
     openai_model: str = Field(default="gpt-4.1-nano")
-    openai_temperature: float = Field(default=0.05)
-    openai_max_tokens: int = Field(default=4000)
-    openai_top_p: float = Field(default=0.1)
+    llm_temperature: float = Field(default=0.05)
+    llm_max_tokens: int = Field(default=4000)
+    llm_top_p: float = Field(default=0.1)
 
     # Embeddings Configuration
+    # Embeddings model are model agnostic
     embeddings_model: str = Field(default="text-embedding-ada-002")
+    # embeddings_model: str = Field(default="text-multilingual-embedding-002")
 
     # Vector Database Selection
     # * Default to ChromaDB
@@ -87,6 +100,9 @@ class Settings(BaseSettings):
             # OpenAI models
             "text-embedding-ada-002": 1536,
             "text-embedding-3-large": 3072,
+            #  Vertex AI models
+            "text-multilingual-embedding-002": 768,
+            "gemini-embedding-001": 3072,
         }
 
         # Determine which model is being used

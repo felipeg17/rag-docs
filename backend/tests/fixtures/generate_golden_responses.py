@@ -1,8 +1,8 @@
 import base64
-from datetime import datetime
 import json
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 
 
 # Add project root to Python path to enable imports
@@ -46,9 +46,9 @@ def record_current_settings() -> dict:
     """Record current settings for reproducibility."""
     return {
         "openai_model": settings.openai_model,
-        "openai_temperature": settings.openai_temperature,
-        "openai_max_tokens": settings.openai_max_tokens,
-        "openai_top_p": settings.openai_top_p,
+        "llm_temperature": settings.llm_temperature,
+        "llm_max_tokens": settings.llm_max_tokens,
+        "llm_top_p": settings.llm_top_p,
         "embeddings_model": settings.embeddings_model,
         "chromadb_collection": settings.chromadb_collection,
         "default_chunk_size": settings.default_chunk_size,
@@ -202,9 +202,9 @@ Answer:"""
         "generated_at": datetime.now().isoformat(),
         "settings": {
             "model": settings.openai_model,
-            "temperature": settings.openai_temperature,
-            "max_tokens": settings.openai_max_tokens,
-            "top_p": settings.openai_top_p,
+            "temperature": settings.llm_temperature,
+            "max_tokens": settings.llm_max_tokens,
+            "top_p": settings.llm_top_p,
             "query": TEST_QUERY,
             "document_title": TEST_DOCUMENT_TITLE,
             "k_results": TEST_K_RESULTS,
@@ -356,9 +356,9 @@ Answer:"""
         "generated_at": datetime.now().isoformat(),
         "settings": {
             "model": settings.openai_model,
-            "temperature": settings.openai_temperature,
-            "max_tokens": settings.openai_max_tokens,
-            "top_p": settings.openai_top_p,
+            "temperature": settings.llm_temperature,
+            "max_tokens": settings.llm_max_tokens,
+            "top_p": settings.llm_top_p,
             "cohere_model": settings.cohere_model,
             "query": TEST_QUERY,
             "document_title": TEST_DOCUMENT_TITLE,

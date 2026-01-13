@@ -20,6 +20,8 @@ dependencies = [
     "langchain-openai==0.2.3",
     "langchain-text-splitters==0.3.8",
     "langchain-postgres>=0.0.16",
+    "langchain-google-genai",
+    "langchain-google-vertexai",
     # LLM Providers
     "openai==1.52.0",
     "cohere==5.13.11",
