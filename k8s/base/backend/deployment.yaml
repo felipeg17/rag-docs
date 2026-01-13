@@ -36,9 +36,16 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1000m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8106
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               path: /health
               port: 8106
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 120
