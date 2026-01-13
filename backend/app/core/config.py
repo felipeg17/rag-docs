@@ -45,8 +45,8 @@ class Settings(BaseSettings):
 
     # Embeddings Configuration
     # Embeddings model are model agnostic
-    # embeddings_model: str = Field(default="text-embedding-ada-002")
-    embeddings_model: str = Field(default="text-multilingual-embedding-002")
+    embeddings_model: str = Field(default="text-embedding-ada-002")
+    # embeddings_model: str = Field(default="text-multilingual-embedding-002")
 
     # Vector Database Selection
     # * Default to ChromaDB
