@@ -1,12 +1,18 @@
 name: integration-tests
 
 on:
+  pull_request:
+    types: [labeled, synchronize]
+  push:
+    branches:
+      - main
   workflow_call:
     inputs:
       ref:
         description: "Git ref to checkout"
-        required: true
+        required: false
         type: string
+        default: ""
   workflow_dispatch:
     inputs:
       ref:
@@ -28,6 +34,7 @@ jobs:
     name: Run Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'workflow_call' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'integration-tests')) }}
 
     # Required for Workload Identity Federation
     permissions:
@@ -38,7 +45,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ inputs.ref != '' && inputs.ref || github.sha }}
 
       - name: Authenticate to Google Cloud
         id: auth
