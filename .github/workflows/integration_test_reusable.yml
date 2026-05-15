@@ -7,7 +7,12 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to run against"
+        required: false
+        default: ""
 
 env:
   PYTHON_VERSION: "3.10.12"
@@ -33,7 +38,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Authenticate to Google Cloud
         id: auth
