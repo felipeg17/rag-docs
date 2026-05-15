@@ -6,6 +6,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to run against"
+        required: false
+        default: ""
 
 jobs:
   check-and-run:
@@ -13,20 +19,28 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should-run: ${{ steps.check.outputs.should-run }}
+      ref: ${{ steps.check.outputs.ref }}
     steps:
       - name: Check conditions
         id: check
         run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch - running tests"
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "ref=${{ inputs.ref || github.sha }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
             echo "Push to main - running tests"
             echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "ref=${{ github.sha }}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             if [[ "${{ contains(github.event.pull_request.labels.*.name, 'integration-tests') }}" == "true" ]]; then
               echo "PR has integration-tests label - running tests"
               echo "should-run=true" >> $GITHUB_OUTPUT
+              echo "ref=${{ github.sha }}" >> $GITHUB_OUTPUT
             else
               echo "PR does not have integration-tests label - skipping"
               echo "should-run=false" >> $GITHUB_OUTPUT
+              echo "ref=${{ github.sha }}" >> $GITHUB_OUTPUT
             fi
           fi
 
@@ -36,4 +50,4 @@ jobs:
     if: needs.check-and-run.outputs.should-run == 'true'
     uses: ./.github/workflows/integration_test_reusable.yml
     with:
-      ref: ${{ github.sha }}
+      ref: ${{ needs.check-and-run.outputs.ref }}
