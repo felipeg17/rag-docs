@@ -7,6 +7,7 @@ on:
         description: "Git ref to checkout"
         required: true
         type: string
+  workflow_dispatch: 
 
 env:
   PYTHON_VERSION: "3.10.12"
