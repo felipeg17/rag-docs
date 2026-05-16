@@ -2,20 +2,47 @@ name: submission-check
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main, "dev", "ft-*"]
-  push:
-    branches: [main, "dev", "ft-*"]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/submission-check.yml"
 
 env:
   PYTHON_VERSION: "3.10.12"
 
+permissions:
+  contents: read
+
 jobs:
-  check-format:
-    name: Check ${{ matrix.component }} code formatting
+  detect-changes:
+    name: Detect changed components
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        component: [backend, frontend]
+    outputs:
+      backend_changed: ${{ steps.changes.outputs.backend }}
+      frontend_changed: ${{ steps.changes.outputs.frontend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine changed components
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  check-format-backend:
+    name: Check backend code formatting
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.backend_changed == 'true' }}
 
     steps:
       - name: Checkout code
@@ -25,25 +52,55 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-          cache-dependency-glob: "${{ matrix.component }}/uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install ${{ matrix.component }} dependencies
-        working-directory: ./${{ matrix.component }}
+      - name: Install backend dependencies
+        working-directory: ./backend
         run: uv sync --all-extras
 
-      - name: Check ${{ matrix.component }} formatting with ruff
-        working-directory: ./${{ matrix.component }}
+      - name: Check backend formatting with ruff
+        working-directory: ./backend
+        run: uv run ruff format --check .
+
+  check-format-frontend:
+    name: Check frontend code formatting
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.frontend_changed == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "frontend/uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: uv sync --all-extras
+
+      - name: Check frontend formatting with ruff
+        working-directory: ./frontend
         run: uv run ruff format --check .
 
   check-backend-typing:
     name: Check backend type hints
     runs-on: ubuntu-latest
-    needs: check-format
+    needs: [detect-changes, check-format-backend]
+    if: ${{ needs.detect-changes.outputs.backend_changed == 'true' }}
 
     steps:
       - name: Checkout code
@@ -71,7 +128,8 @@ jobs:
   backend-unit-tests:
     name: Run backend unit tests
     runs-on: ubuntu-latest
-    needs: check-backend-typing
+    needs: [detect-changes, check-backend-typing]
+    if: ${{ needs.detect-changes.outputs.backend_changed == 'true' }}
 
     steps:
       - name: Checkout code
@@ -115,7 +173,8 @@ jobs:
   check-secrets:
     name: Scan for hardcoded secrets
     runs-on: ubuntu-latest
-    needs: backend-unit-tests
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.backend_changed == 'true' || needs.detect-changes.outputs.frontend_changed == 'true' }}
 
     steps:
       - name: Checkout code
