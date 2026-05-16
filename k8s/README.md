@@ -28,7 +28,7 @@ Alternatively, if it's required to build the containers each time add the `--cac
     skaffold dev --profile local --cache-artifacts=false -f skaffold.yaml
     ```
 
-## Run ollama in the host
+## Run ollama on the host
 
 1. Create a minikube cluster with minimal resources:
 
