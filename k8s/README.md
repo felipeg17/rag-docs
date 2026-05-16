@@ -2,7 +2,7 @@
 
 ## Run Ollama inside minikube locally
 
-1. Create a minikube cluster (recommeded specs for ollama), to have full GPU support from Nvidia,
+1. Create a minikube cluster (recommended specs for ollama), to have full GPU support from Nvidia,
     it's required to install some additional packages (check [here](https://medium.com/elevate-tech/ollama-with-open-web-ui-and-nvidia-gpu-support-on-rootless-docker-4748b483580a)).
 
     ```sh
@@ -38,7 +38,7 @@ Alternatively, if it's required to build the containers each time add the `--cac
 
 2. Create secrets:
 
-    ````
+    ```sh
     kubectl create secret generic api-keys \
     --from-literal=OPENAI_API_KEY=dummy \
     --from-literal=COHERE_API_KEY=dummy \
