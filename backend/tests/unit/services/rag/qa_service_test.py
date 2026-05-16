@@ -27,9 +27,9 @@ class TestQAService(unittest.TestCase):
         # Use settings from golden response snapshot
         self.settings = Settings(
             openai_model=self.settings_snapshot["openai_model"],
-            openai_temperature=self.settings_snapshot["openai_temperature"],
-            openai_max_tokens=self.settings_snapshot["openai_max_tokens"],
-            openai_top_p=self.settings_snapshot["openai_top_p"],
+            llm_temperature=self.settings_snapshot["llm_temperature"],
+            llm_max_tokens=self.settings_snapshot["llm_max_tokens"],
+            llm_top_p=self.settings_snapshot["llm_top_p"],
             default_k_results=self.settings_snapshot["default_k_results"],
             default_chunk_size=self.settings_snapshot["default_chunk_size"],
             default_chunk_overlap=self.settings_snapshot["default_chunk_overlap"],

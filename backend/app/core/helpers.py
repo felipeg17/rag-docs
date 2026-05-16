@@ -14,6 +14,7 @@ class VectorDBType(str, Enum):
     PGVECTOR = "pgvector"
 
 
+@lru_cache(maxsize=10)
 def _get_gcp_project_id() -> str:
     """Get GCP project ID from metadata server (works in Cloud Run) or env var."""
     try:

@@ -10,5 +10,5 @@ data:
   HOST: "0.0.0.0"
   PORT: "8106"
   LANGCHAIN_PROJECT: "rag-docs-integration"
-  OLLAMA_BASE_URL: "http://ollama:11434"
+  OLLAMA_BASE_URL: "http://host.minikube.internal:11434"
   VECTOR_DB_TYPE: "chroma"

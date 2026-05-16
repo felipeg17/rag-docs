@@ -3,9 +3,9 @@
   "generated_at": "2025-11-23T12:08:17.565160",
   "settings": {
     "openai_model": "gpt-4o-mini",
-    "openai_temperature": 0.05,
-    "openai_max_tokens": 4000,
-    "openai_top_p": 0.1,
+    "llm_temperature": 0.05,
+    "llm_max_tokens": 4000,
+    "llm_top_p": 0.1,
     "embeddings_model": "text-embedding-ada-002",
     "chromadb_collection": "rag-docs",
     "default_chunk_size": 800,

@@ -1,12 +1,24 @@
 name: integration-tests
 
 on:
+  pull_request:
+    types: [labeled, synchronize]
+  push:
+    branches:
+      - main
   workflow_call:
     inputs:
       ref:
         description: "Git ref to checkout"
-        required: true
+        required: false
         type: string
+        default: ""
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to run against"
+        required: false
+        default: ""
 
 env:
   PYTHON_VERSION: "3.10.12"
@@ -22,6 +34,7 @@ jobs:
     name: Run Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'workflow_call' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'integration-tests')) }}
 
     # Required for Workload Identity Federation
     permissions:
@@ -32,7 +45,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -151,7 +164,7 @@ jobs:
           kubectl port-forward svc/rag-docs-backend 8106:8106 &
           kubectl port-forward svc/chromadb 9001:8000 &
           kubectl port-forward svc/pgvector 6025:5432 &
-          sleep 10
+          sleep 15
 
           # Verify port forwards
           curl -f --max-time 10 http://localhost:8106/health || (echo "Backend health check failed" && exit 1)

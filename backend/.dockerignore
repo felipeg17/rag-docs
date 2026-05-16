@@ -1,0 +1,21 @@
+# folders
+__pycache__/
+.venv/
+venv/
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# files
+*.pyc
+*.pyo
+*.pyd
+.coverage
+.cache
+.git
+.mypy_cache
+.pytest_cache
+.ruff_cache
+
+
