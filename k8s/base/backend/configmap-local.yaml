@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  CHROMADB_HOST: "chromadb"
+  CHROMADB_PORT: "8000"
+  PGVECTOR_HOST: "pgvector"
+  PGVECTOR_PORT: "5432"
+  HOST: "0.0.0.0"
+  PORT: "8106"
+  LANGCHAIN_PROJECT: "rag-docs-integration"
+  LOCAL_LLM: "true"
+  OLLAMA_BASE_URL: "http://host.minikube.internal:11434"
+  VECTOR_DB_TYPE: "chroma"
