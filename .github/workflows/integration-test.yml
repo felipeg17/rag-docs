@@ -183,7 +183,6 @@ jobs:
           PGVECTOR_DATABASE: langchain
           DB_SCHEMA: app
           VECTOR_DB_TYPE: chroma
-          LOCAL_LLM: "false"
         run: |
           cd backend/tests/behave
           uv run behave --format=pretty --format=json --outfile=behave-results.json
