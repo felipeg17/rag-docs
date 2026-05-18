@@ -11,7 +11,6 @@ class TestLLMClient(unittest.TestCase):
         # Arrange
         settings = Settings(
             local_llm=False,
-            openai_api_key="test-key",
             openai_model="gpt-4o-mini",
             llm_temperature=0.05,
             llm_max_tokens=4000,
@@ -39,7 +38,6 @@ class TestLLMClient(unittest.TestCase):
         # Arrange
         custom_settings = Settings(
             local_llm=False,
-            openai_api_key="custom-key",
             openai_model="gpt-4",
             llm_temperature=0.7,
             llm_max_tokens=2000,
@@ -61,8 +59,9 @@ class TestLLMClient(unittest.TestCase):
         )
         self.assertIsNotNone(client.client)
 
+    @patch("app.core.config._get_gcp_project_id", return_value="test-project")
     @patch("app.infrastructure.llm.client.ChatVertexAI")
-    def test_llm_client_vertex_ai_initialization(self, mock_chat_vertex_ai):
+    def test_llm_client_vertex_ai_initialization(self, mock_chat_vertex_ai, _):
         # Arrange
         settings = Settings(
             local_llm=False,
@@ -89,8 +88,9 @@ class TestLLMClient(unittest.TestCase):
         )
         self.assertIsNotNone(client.client)
 
+    @patch("app.core.config._get_gcp_project_id", return_value="test-project")
     @patch("app.infrastructure.llm.client.ChatVertexAI")
-    def test_llm_client_vertex_ai_custom_settings(self, mock_chat_vertex_ai):
+    def test_llm_client_vertex_ai_custom_settings(self, mock_chat_vertex_ai, _):
         """Test LLMClient with using Vertex AI custom settings."""
         # Arrange
         custom_settings = Settings(
