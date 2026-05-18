@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Annotated
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11,18 +10,18 @@ class Settings(BaseSettings):
     """Application settings from environment variables."""
 
     # LLM configuration
-    local_llm: Annotated[bool, Field(env="LOCAL_LLM")] = False
+    local_llm: bool = Field(default=False, validation_alias="LOCAL_LLM")
 
     # Cloud llm configuration
-    use_vertex_ai: Annotated[bool, Field(env="USE_VERTEX_AI")] = False
+    use_vertex_ai: bool = Field(default=False, validation_alias="USE_VERTEX_AI")
 
     # Ollama Configuration
     # ollama_model: str = Field(default="llama3.2")
     ollama_model: str = Field(default="qwen3:8b")
     ollama_base_url: str = Field(default="http://localhost:11434")
     ollama_thinking: bool = Field(default=False)
-    ollama_embeddings_model: Annotated[str, Field(env="OLLAMA_EMBEDDINGS_MODEL")] = (
-        "nomic-embed-text:v1.5"
+    ollama_embeddings_model: str = Field(
+        default="nomic-embed-text-v2-moe", validation_alias="OLLAMA_EMBEDDINGS_MODEL"
     )
 
     # Vertex AI Configuration
@@ -50,25 +49,27 @@ class Settings(BaseSettings):
 
     # Vector Database Selection
     # * Default to ChromaDB
-    vector_db_type: Annotated[VectorDBType, Field(env="VECTOR_DB_TYPE")] = VectorDBType.CHROMA
+    vector_db_type: VectorDBType = Field(
+        default=VectorDBType.CHROMA, validation_alias="VECTOR_DB_TYPE"
+    )
 
     # ChromaDB Configuration
-    chromadb_host: Annotated[str, Field(env="CHROMADB_HOST")] = "localhost"
-    chromadb_port: Annotated[int, Field(env="CHROMADB_PORT")] = 9000
+    chromadb_host: str = Field(default="localhost", validation_alias="CHROMADB_HOST")
+    chromadb_port: int = Field(default=8000, validation_alias="CHROMADB_PORT")
     chromadb_tenant: str = Field(default="dev")
     chromadb_database: str = Field(default="rag-database")
     chromadb_collection: str = Field(default="rag-docs")
 
     # Postgres Configuration
     # * Based on: https://docs.langchain.com/oss/python/integrations/vectorstores/pgvectorstore
-    pgvector_host: Annotated[str, Field(env="PGVECTOR_HOST")] = "localhost"
-    pgvector_port: Annotated[int, Field(env="PGVECTOR_PORT")] = 6024
-    pgvector_user: Annotated[str, Field(env="PGVECTOR_USER")] = "langchain"
-    pgvector_password: Annotated[str, Field(env="PGVECTOR_PASSWORD")] = "langchain"
-    pgvector_database: Annotated[str, Field(env="PGVECTOR_DATABASE")] = "langchain"
-    pgvector_schema: Annotated[str, Field(env="PGVECTOR_SCHEMA")] = "vector"
-    pgvector_table: Annotated[str, Field(env="PGVECTOR_TABLE")] = "rag_documents"
-    db_schema: Annotated[str, Field(env="DB_SCHEMA")] = "app"
+    pgvector_host: str = Field(default="localhost", validation_alias="PGVECTOR_HOST")
+    pgvector_port: int = Field(default=6024, validation_alias="PGVECTOR_PORT")
+    pgvector_user: str = Field(default="langchain", validation_alias="PGVECTOR_USER")
+    pgvector_password: str = Field(default="langchain", validation_alias="PGVECTOR_PASSWORD")
+    pgvector_database: str = Field(default="langchain", validation_alias="PGVECTOR_DATABASE")
+    pgvector_schema: str = Field(default="vector", validation_alias="PGVECTOR_SCHEMA")
+    pgvector_table: str = Field(default="rag_documents", validation_alias="PGVECTOR_TABLE")
+    db_schema: str = Field(default="app", validation_alias="DB_SCHEMA")
 
     # RAG Configuration
     default_chunk_size: int = Field(default=800)
@@ -84,19 +85,21 @@ class Settings(BaseSettings):
         return get_secret("cohere-api-key")
 
     # Application
-    app_host: Annotated[str, Field(env="HOST")] = "0.0.0.0"
+    app_host: str = Field(default="0.0.0.0", validation_alias="HOST")
     app_port: int = Field(default=8106)
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).parent.parent.parent / "backend.env"),
         case_sensitive=False,
         extra="ignore",
+        populate_by_name=True,
     )
 
     def get_vector_size(self) -> int:
         model_sizes = {
             # Ollama models
             "nomic-embed-text:v1.5": 768,
+            "nomic-embed-text-v2-moe": 256,
             # OpenAI models
             "text-embedding-ada-002": 1536,
             "text-embedding-3-large": 3072,
