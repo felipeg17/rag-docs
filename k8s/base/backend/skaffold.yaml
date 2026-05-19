@@ -37,6 +37,13 @@ profiles:
       local:
         push: false
         useBuildkit: true
+    patches:
+      - op: replace
+        path: /manifests/rawYaml
+        value:
+          - deployment.yaml
+          - service.yaml
+          - configmap-local.yaml
   - name: ci
     build:
       local:
