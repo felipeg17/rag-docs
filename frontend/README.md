@@ -19,7 +19,7 @@ cd ..
 docker compose --env-file image.env --profile full up --build
 ```
 
-Frontend runs at `http://localhost:8501`.
+Frontend runs at `http://localhost:8502`.
 
 ### Local Development
 
