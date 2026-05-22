@@ -1,6 +1,6 @@
 # Architecture
 
-rag-docs is built on FastAPI with a service-oriented architecture. This document explains key components and how they interact.
+`rag-docs` is built on `FastAPI` with a service-oriented architecture.
 
 ## High-Level Flow
 
@@ -30,12 +30,12 @@ Response + Source Documents
 
 ## Dependency Injection
 
-FastAPI DI in `app/core/dependencies.py` wires the entire application:
+FastAPI _DI_ in `app/core/dependencies.py` wires the entire application:
 
 ```
 HTTP Request
     ↓
-Singletons (cached):  get_llm_client, get_embeddings_client, 
+Singletons (cached):  get_llm_client, get_embeddings_client,
                       get_vector_db_repository, get_db_client
     ↓
 Request-scoped:       get_db_session → get_document_repository → get_document_service
@@ -44,11 +44,10 @@ Request-scoped:       get_db_session → get_document_repository → get_documen
 Endpoint Handler
 ```
 
-Singletons are `@lru_cache`-decorated to ensure single instances. Request-scoped objects are plain functions instantiated per request.
-
 ## Core Services
 
 ### DocumentIngestionService
+
 - Location: `app/services/ingest/ingestion.py`
 - Handles PDF upload, text extraction, chunking, and vector storage
 - Returns document metadata and chunk count
@@ -57,6 +56,7 @@ Singletons are `@lru_cache`-decorated to ensure single instances. Request-scoped
   - **Semantic**: Embedding-aware boundaries (slower, more accurate splits)
 
 ### QAService
+
 - Location: `app/services/rag/qa_service.py`
 - Retrieves relevant document chunks
 - Sends chunks + user question to LLM
@@ -64,58 +64,60 @@ Singletons are `@lru_cache`-decorated to ensure single instances. Request-scoped
 - Standard RAG strategy
 
 ### RerankService
+
 - Location: `app/services/rag/rerank_service.py`
 - Retrieves candidate chunks (retrieval)
 - Uses Cohere to rerank top results
 - Sends top reranked chunks to LLM
-- More expensive, potentially higher quality answers
 
 ### DocumentService
+
 - Location: `app/services/persistence/document_service.py`
 - Manages document registry in PostgreSQL
 - Tracks documents by SHA-256 content hash (prevents duplicates)
 - Stores document metadata (title, upload date, etc.)
 
 ### InteractionService
+
 - Location: `app/services/persistence/interaction_service.py`
 - Logs every search and Q&A interaction to PostgreSQL
 - Tracks user queries, retrieved documents, answers
 - Enables analytics and debugging
 
-## Vector Database Abstraction
-
-Two implementations available:
+## Vector Database
 
 ### ChromaDB
+
 - HTTP client connecting to ChromaDB server
 - Tenant/database/collection isolation
-- Simple setup, suitable for single-user or small teams
 - Requires: `admin_chroma.py` to initialize tenant/database on first run
 
 ### PGVector
+
 - PostgreSQL with pgvector extension
 - Two schemas:
   - `app`: Application tables (documents, interactions) — managed by Alembic
   - `vector`: Embeddings — managed by LangChain
-- Suitable for production deployments with PostgreSQL infrastructure
-- Supports row-level security and PostgreSQL features
 
 Switch between backends via `VECTOR_DB_TYPE` environment variable.
 
 ## LLM Providers
 
 ### Ollama (Local)
+
 - Default: `qwen3:8b`
 - Embeddings: `nomic-embed-text-v2-moe`
-- Runs locally, no API keys needed
+- Runs locally
 - Set `LOCAL_LLM=true`
 
 ### OpenAI
+
 - Model: `gpt-4.1-nano`
 - Requires `OPENAI_API_KEY`
 - Set `LOCAL_LLM=false`, `USE_VERTEX_AI=false`
 
 ### Vertex AI (Google Cloud)
+
 - Model: `gemini-2.5-flash`
 - Requires GCP credentials
 - Set `LOCAL_LLM=false`, `USE_VERTEX_AI=true`
@@ -127,13 +129,7 @@ Configuration in `app/infrastructure/llm/client.py` and `app/infrastructure/embe
 Configured in `app/services/document/text_splitter.py`:
 
 - **Recursive**: `RecursiveCharacterTextSplitter` — splits by punctuation/whitespace, recursive fallback
-  - Pros: Fast, predictable chunk boundaries
-  - Cons: May split mid-sentence semantically
 - **Semantic**: `SemanticChunker` — uses embeddings to find natural boundaries
-  - Pros: Better semantic coherence
-  - Cons: Slower (requires embedding calls)
-
-Currently, the ingest endpoint hardcodes "recursive" (tracked as TODO).
 
 ## Database Schema
 
@@ -177,12 +173,12 @@ qa_interactions (
 
 ## API Endpoints
 
-| Method | Endpoint | Handler |
-|--------|----------|---------|
-| GET | `/health` | Health check |
-| POST | `/api/v1/documents` | Document ingestion |
-| POST | `/api/v1/documents/{document_id}/search` | Similarity search |
-| POST | `/api/v1/documents/{document_id}/ask` | Question answering |
+| Method | Endpoint                                 | Handler            |
+| ------ | ---------------------------------------- | ------------------ |
+| GET    | `/health`                                | Health check       |
+| POST   | `/api/v1/documents`                      | Document ingestion |
+| POST   | `/api/v1/documents/{document_id}/search` | Similarity search  |
+| POST   | `/api/v1/documents/{document_id}/ask`    | Question answering |
 
 `{document_id}` is the document title (not UUID), used for vector database filtering.
 
@@ -192,12 +188,3 @@ Configuration sources (in order of precedence):
 
 1. Environment variables (`.env` file or system)
 2. GCP Secret Manager (if `USE_SECRETS=true`)
-3. Hardcoded defaults in code
-
-See [SETUP.md](SETUP.md) for complete variable reference.
-
-## Error Handling and Logging
-
-- Structured logging using Python's `logging` module
-- API errors return standard JSON error responses
-- Integration tests verify error handling paths

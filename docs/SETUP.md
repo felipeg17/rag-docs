@@ -1,7 +1,5 @@
 # Setup and Configuration
 
-This guide covers environment setup, configuration variables, and running rag-docs locally or in Docker.
-
 ## Prerequisites
 
 - Python 3.10+
@@ -11,7 +9,7 @@ This guide covers environment setup, configuration variables, and running rag-do
 
 ## Environment Setup
 
-### 1. Copy Template Configuration
+### Copy Template Configuration
 
 ```bash
 cd backend
@@ -21,7 +19,7 @@ cp frontend.env.template frontend.env
 cd ..
 ```
 
-### 2. Backend Configuration (backend.env)
+### Backend Configuration (backend.env)
 
 #### LLM Provider Selection
 
@@ -52,12 +50,12 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 #### Vector Database Selection
 
 ```bash
-# ChromaDB (default, simpler setup)
+# ChromaDB
 VECTOR_DB_TYPE=chroma
 CHROMA_HOST=chroma
 CHROMA_PORT=8000
 
-# Or PGVector (requires PostgreSQL)
+# Or PGVector
 VECTOR_DB_TYPE=pgvector
 DATABASE_URL=postgresql://user:password@postgres:5432/ragdocs
 ```
@@ -68,7 +66,7 @@ DATABASE_URL=postgresql://user:password@postgres:5432/ragdocs
 # Option 1: Environment variables
 USE_SECRETS=false
 
-# Option 2: GCP Secret Manager (requires GCP credentials)
+# Option 2: GCP Secret Manager
 USE_SECRETS=true
 GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 GCP_PROJECT_ID=your-project-id
@@ -79,16 +77,12 @@ GCP_PROJECT_ID=your-project-id
 ```bash
 # Database
 DATABASE_URL=postgresql://user:password@postgres:5432/ragdocs
-DB_ECHO=false  # Set to true for SQL logging
-
-# Logging
-LOG_LEVEL=INFO
 
 # API
 BACKEND_URL=http://localhost:8106
 ```
 
-### 3. Frontend Configuration (frontend.env)
+### Frontend Configuration (frontend.env)
 
 ```bash
 BACKEND_URL=http://localhost:8106
@@ -219,40 +213,3 @@ Integration tests run only on `main` branch or with `integration-tests` label in
 ## Kubernetes Deployment
 
 See [k8s/README.md](../k8s/README.md) for Kubernetes setup with Skaffold or kubectl.
-
-## Troubleshooting
-
-### PostgreSQL Connection Refused
-
-Ensure PostgreSQL is running:
-
-```bash
-# Docker Compose
-docker compose ps postgres
-
-# Local
-brew services start postgresql  # macOS
-```
-
-### ChromaDB Not Initializing
-
-Run admin script:
-
-```bash
-cd backend
-python admin_chroma.py
-```
-
-### API Key Not Found
-
-Check `backend.env` has correct variables. If using `USE_SECRETS=true`, verify GCP credentials.
-
-### Vector Database Selection Not Working
-
-Verify `VECTOR_DB_TYPE` is set to `chroma` or `pgvector` in `backend.env`.
-
-## Next Steps
-
-- See [ARCHITECTURE.md](ARCHITECTURE.md) for system design
-- See [TESTING.md](TESTING.md) for testing details
-- See [backend/README.md](../backend/README.md) for backend-specific info
