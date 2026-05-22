@@ -14,6 +14,8 @@
    minikube addons enable gcp-auth --force --refresh
    ```
 
+**Note:** The `skaffold` commands are intended to run in the root of the repo.
+
 2. Skaffold out with `ollama` profile.
 
    ```sh

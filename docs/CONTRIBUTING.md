@@ -20,7 +20,7 @@ git checkout -b ft-my-feature
 
 Branch naming: `ft-`, `fix-`, `chore-`, `docs-` prefixes.
 
-### 3. Install Dependencies
+### Install Dependencies
 
 ```bash
 cd backend

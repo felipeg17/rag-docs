@@ -6,16 +6,23 @@ rag-docs includes unit tests and integration tests (BDD).
 
 ```
 backend/tests/
-├── unit/                    # Unit tests
-│   ├── api/                 # API endpoint tests
-│   ├── services/            # Service layer tests
-│   ├── repositories/        # Data access tests
-│   └── fixtures/            # Shared test data
+├── unit/
+│   ├── api/                 # Route handler tests
+│   ├── infrastructure/      # Client and repository tests
+│   ├── models/              # Request/response model tests
+│   └── services/            # Service layer tests
+│       ├── document/
+│       ├── ingest/
+│       ├── persistence/
+│       └── rag/
 ├── behave/                  # Integration/BDD tests
-│   ├── features/            # Feature files (.feature)
-│   └── steps/               # Step implementations
+│   ├── features/            # Gherkin feature files
+│   ├── steps/               # Step implementations
+│   └── data/                # Test data files
 └── fixtures/
-    └── golden_responses/    # Mock API responses
+    ├── data/                # Sample PDF files
+    ├── golden_responses/    # Saved API responses for mocking
+    └── generate_golden_responses.py
 ```
 
 ## Running Tests
@@ -29,17 +36,27 @@ pytest tests/unit -v
 
 ### Integration Tests (BDD)
 
-Requires running backend at http://localhost:8106:
+Feature files use Gherkin syntax and live in `tests/behave/features/`:
 
-```bash
-cd backend
-BACKEND_URL=http://localhost:8106 behave tests/behave -v
+```gherkin
+Feature: Question Answering
+  Scenario: User asks question on ingested document
+    Given a document is uploaded
+    When I ask "What is the main topic?"
+    Then I receive an answer
+    And the answer contains source documents
 ```
 
-Optional: Specify feature file:
+Run all integration tests:
 
 ```bash
-behave tests/behave/features/document_ingestion.feature
+uv run behave -v tests/behave/
+```
+
+Run a single feature file:
+
+```bash
+uv run behave -v tests/behave/features/document_ingestion.feature
 ```
 
 ### Linting and Type Checking
@@ -55,20 +72,6 @@ ruff format app
 
 # Type check
 mypy app
-```
-
-## Integration Tests (BDD)
-
-Feature files use Gherkin syntax:
-
-```gherkin
-# tests/behave/features/qa.feature
-Feature: Question Answering
-  Scenario: User asks question on ingested document
-    Given a document is uploaded
-    When I ask "What is the main topic?"
-    Then I receive an answer
-    And the answer contains source documents
 ```
 
 ## CI/CD Integration

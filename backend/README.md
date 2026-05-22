@@ -15,8 +15,9 @@ The backend provides REST APIs for:
 ### Docker
 
 ```bash
-cd ..
-docker compose --profile backend up --build
+cp image.env.template image.env
+# Edit image.env and set BACKEND_IMAGE_NAME and IMAGE_TAG
+docker compose --env-file image.env --profile backend up --build
 ```
 
 Backend runs at `http://localhost:8106`.
@@ -45,77 +46,114 @@ Server runs at `http://localhost:8106`.
 
 ## API Endpoints
 
+Full interactive documentation is available at `http://localhost:8106/docs` (Swagger UI) or `/redoc` (ReDoc) when the server is running.
+
 ### Health Check
 
-```bash
+```
 GET /health
 ```
 
 ### Ingest Document
 
-```bash
+```
 POST /api/v1/documents
-Content-Type: application/json
-
-{
-  "titulo": "my-document",
-  "contenido": "base64-encoded-pdf-content"
-}
 ```
 
-Response:
+Request body (`DocumentIngestRequest`):
+
 ```json
 {
-  "document_id": "doc-uuid",
-  "titulo": "my-document",
-  "chunks_created": 42,
-  "content_hash": "sha256-hash"
+  "title": "my-document",
+  "document_type": "documento-pdf",
+  "document_content": "<base64-encoded-pdf>"
 }
 ```
+
+`document_type` is optional and defaults to `"documento-pdf"`. `document_content` must be a valid base64 string.
+
+Response (`DocumentIngestResponse`):
+
+```json
+{
+  "document_id": "uuid",
+  "title": "my-document",
+  "status": "created",
+  "message": "Document created successfully"
+}
+```
+
+`status` is `"created"` for new documents or `"updated"` if the document was re-uploaded.
 
 ### Search Documents
 
-```bash
+```
 POST /api/v1/documents/{document_id}/search
-Content-Type: application/json
+```
 
+`document_id` is the document **title** (not UUID).
+
+Request body (`DocumentSearchRequest`):
+
+```json
 {
   "query": "what is RAG?",
-  "k": 5
+  "k_results": 4,
+  "metadata_filter": {}
 }
 ```
 
-Response:
+`k_results` controls how many chunks to retrieve (1–10, default 4). `metadata_filter` can narrow results by chunk metadata.
+
+Response (`DocumentSearchResponse`):
+
 ```json
 {
   "query": "what is RAG?",
   "results": [
-    {"chunk": "text...", "score": 0.95},
-    {"chunk": "text...", "score": 0.88}
-  ]
+    {
+      "content": "RAG stands for Retrieval-Augmented Generation...",
+      "score": 0.95,
+      "metadata": {"page": 1, "source": "my-document"}
+    }
+  ],
+  "total_results": 4
 }
 ```
 
-### Ask Question
+### Ask a Question
 
-```bash
+```
 POST /api/v1/documents/{document_id}/ask
-Content-Type: application/json
-
-{
-  "pregunta": "what is the main topic?",
-  "estrategia": "standard"
-}
 ```
 
-Strategies: `standard` (RAG) or `rerank` (Cohere reranking).
+Request body (`QuestionRequest`):
 
-Response:
 ```json
 {
-  "respuesta": "The main topic is...",
-  "documentos_fuente": [
-    {"chunk": "text...", "score": 0.92}
+  "question": "What is the main topic?",
+  "strategy": "standard",
+  "k_results": 4,
+  "metadata_filter": {}
+}
+```
+
+`strategy` accepts `"standard"` (RAG) or `"rerank"` (retrieval + Cohere reranking). `rerank` requires a `COHERE_API_KEY`.
+
+Response (`QuestionAnswerResponse`):
+
+```json
+{
+  "question": "What is the main topic?",
+  "answer": "The main topic is...",
+  "document_id": "uuid",
+  "strategy": "standard",
+  "source_documents": [
+    {
+      "page_content": "Relevant chunk text...",
+      "metadata": {"page": 2, "source": "my-document"},
+      "score": 0.92
+    }
   ]
 }
 ```
@@ -125,18 +163,25 @@ Response:
 ```
 backend/
 ├── app/
+│   ├── api/                # Route handlers
+│   │   └── routers/
 │   ├── core/               # Config, dependencies, utilities
-│   ├── infrastructure/     # LLM, embeddings, database clients
-│   ├── models/             # SQLAlchemy models
-│   ├── repositories/       # Data access layer
-│   ├── routes/             # API route handlers
-│   ├── schemas/            # Pydantic request/response models
+│   ├── infrastructure/     # LLM, embeddings, vector DB, database clients
+│   │   ├── database/
+│   │   ├── embeddings/
+│   │   ├── llm/
+│   │   └── vector_db/
+│   ├── models/             # Pydantic request/response models
+│   │   ├── requests/
+│   │   └── responses/
 │   ├── services/           # Business logic
-│   │   ├── ingest/         # Document ingestion
-│   │   ├── rag/            # Q&A and retrieval strategies
 │   │   ├── document/       # Text splitting
-│   │   └── persistence/    # Document/interaction persistence
-│   └── migrations/         # Alembic database migrations
+│   │   ├── ingest/         # PDF ingestion pipeline
+│   │   ├── persistence/    # Document/interaction persistence
+│   │   └── rag/            # Q&A and reranking strategies
+│   ├── migrations/         # Alembic database migrations
+│   ├── prompts/            # LLM prompt templates
+│   └── utils/
 ├── tests/
 │   ├── unit/               # Unit tests
 │   └── behave/             # Integration tests (BDD)
@@ -243,75 +288,3 @@ alembic upgrade head
 ```
 
 Switch between backends via `VECTOR_DB_TYPE` environment variable.
-
-## LLM Providers
-
-### Ollama (Local, Recommended for Development)
-
-```bash
-LOCAL_LLM=true
-OLLAMA_BASE_URL=http://ollama:11434
-OLLAMA_MODEL=qwen3:8b
-```
-
-### OpenAI
-
-```bash
-LOCAL_LLM=false
-USE_VERTEX_AI=false
-OPENAI_API_KEY=sk-...
-```
-
-### Vertex AI (Google Cloud)
-
-```bash
-LOCAL_LLM=false
-USE_VERTEX_AI=true
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
-```
-
-## Troubleshooting
-
-### Port 8106 Already in Use
-
-Change port in Docker Compose or uvicorn command:
-
-```bash
-uvicorn main:app --reload --port 8107
-```
-
-### Database Connection Error
-
-Verify `DATABASE_URL` and PostgreSQL is running:
-
-```bash
-docker compose logs postgres
-```
-
-### ChromaDB Not Found
-
-Initialize ChromaDB:
-
-```bash
-python admin_chroma.py
-```
-
-### Import Errors
-
-Ensure you're in the correct directory and virtual environment is activated:
-
-```bash
-cd backend
-source .venv/bin/activate
-```
-
-## Contributing
-
-See `../docs/CONTRIBUTING.md` for guidelines.
-
-## Resources
-
-- [Architecture](../docs/ARCHITECTURE.md)
-- [Setup Guide](../docs/SETUP.md)
-- [Testing Guide](../docs/TESTING.md)
-- [Main README](../README.md)

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.10+
+- Python >=3.10.12,<3.11
 - Docker and Docker Compose (for containerized setup)
 - `uv` package manager (for local development)
 - PostgreSQL 13+ (for PGVector backend, or pgvector service in Docker)
@@ -50,42 +50,40 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 #### Vector Database Selection
 
 ```bash
-# ChromaDB
+# ChromaDB (default)
 VECTOR_DB_TYPE=chroma
-CHROMA_HOST=chroma
-CHROMA_PORT=8000
+CHROMADB_HOST=chromadb
+CHROMADB_PORT=8000
 
 # Or PGVector
 VECTOR_DB_TYPE=pgvector
-DATABASE_URL=postgresql://user:password@postgres:5432/ragdocs
+PGVECTOR_HOST=localhost
+PGVECTOR_PORT=6024
+PGVECTOR_USER=langchain
+PGVECTOR_PASSWORD=langchain
+PGVECTOR_DATABASE=langchain
 ```
 
 #### Secrets Management
 
 ```bash
-# Option 1: Environment variables
+# Option 1: Environment variables (default)
 USE_SECRETS=false
+OPENAI_API_KEY=sk-...
+COHERE_API_KEY=...
 
 # Option 2: GCP Secret Manager
 USE_SECRETS=true
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
-GCP_PROJECT_ID=your-project-id
+PROJECT_ID=your-gcp-project-id
 ```
 
-#### Other Variables
-
-```bash
-# Database
-DATABASE_URL=postgresql://user:password@postgres:5432/ragdocs
-
-# API
-BACKEND_URL=http://localhost:8106
-```
+When `USE_SECRETS=false`, the app reads `OPENAI_API_KEY` and `COHERE_API_KEY` from environment variables. When `true`, it fetches them from GCP Secret Manager using `PROJECT_ID` to locate the project.
 
 ### Frontend Configuration (frontend.env)
 
 ```bash
-BACKEND_URL=http://localhost:8106
+API_HOST=localhost
+API_PORT=8106
 ```
 
 ## Docker Compose Setup
@@ -97,13 +95,6 @@ BACKEND_URL=http://localhost:8106
 docker compose --env-file image.env --profile full up --build
 ```
 
-Services:
-- `backend` (FastAPI) — http://localhost:8106
-- `frontend` (Streamlit) — http://localhost:8501
-- `postgres` (PostgreSQL)
-- `chroma` (ChromaDB, if VECTOR_DB_TYPE=chroma)
-- `ollama` (Ollama, if LOCAL_LLM=true)
-
 ### Start Backend Only
 
 ```bash
@@ -113,8 +104,8 @@ docker compose --profile backend up --build
 ### View Logs
 
 ```bash
-docker compose logs -f backend
-docker compose logs -f frontend
+docker compose logs -f rag-docs-backend
+docker compose logs -f rag-docs-frontend
 ```
 
 ### Stop Services

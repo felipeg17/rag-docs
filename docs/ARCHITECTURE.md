@@ -139,30 +139,48 @@ Configured in `app/services/document/text_splitter.py`:
 -- Document registry
 documents (
   id UUID PRIMARY KEY,
-  titulo TEXT,
-  content_hash VARCHAR(64),  -- SHA-256
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
+  title VARCHAR(1000) NOT NULL,
+  document_type VARCHAR(200) NOT NULL,
+  content_hash VARCHAR(64) UNIQUE NOT NULL,  -- SHA-256
+  file_size_bytes INT,
+  page_count INT,
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE
 )
 
 -- Search interactions
 search_interactions (
   id UUID PRIMARY KEY,
-  document_id UUID REFERENCES documents,
-  query TEXT,
-  retrieved_count INT,
-  created_at TIMESTAMP
+  document_id UUID NOT NULL,
+  query_text TEXT NOT NULL,
+  k_results INT,
+  results_count INT,
+  avg_similarity_score FLOAT,
+  execution_time_ms INT,
+  session_id UUID,
+  user_id VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE
 )
 
 -- Q&A interactions
 qa_interactions (
   id UUID PRIMARY KEY,
-  document_id UUID REFERENCES documents,
-  pregunta TEXT,
-  respuesta TEXT,
-  estrategia VARCHAR(20),  -- 'standard' or 'rerank'
-  source_docs JSONB,
-  created_at TIMESTAMP
+  document_id UUID NOT NULL,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  strategy VARCHAR(50),  -- 'standard' or 'rerank'
+  k_results INT,
+  llm_model VARCHAR(100),
+  embedding_model VARCHAR(100),
+  execution_time_ms INT,
+  tokens_used INT,
+  session_id UUID,
+  user_id VARCHAR(255),
+  feedback_text TEXT,
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE
 )
 ```
 
@@ -184,7 +202,10 @@ qa_interactions (
 
 ## Configuration Management
 
-Configuration sources (in order of precedence):
+Configuration sources, in order of precedence:
 
-1. Environment variables (`.env` file or system)
-2. GCP Secret Manager (if `USE_SECRETS=true`)
+1. GCP Secret Manager (if `USE_SECRETS=true`) — used for API keys (`openai-api-key`, `cohere-api-key`)
+2. Environment variables (`.env` file or system)
+3. Hardcoded defaults in `app/core/config.py`
+
+The `USE_SECRETS` env var controls whether `get_secret()` in `app/core/helpers.py` fetches from GCP Secret Manager or falls back to environment variables.

@@ -32,7 +32,7 @@ kubectl create secret generic api-keys \
   --from-literal=COHERE_API_KEY=dummy
 
 # Deploy with Skaffold
-skaffold dev --profile local,ollama -f k8s/skaffold.yaml
+skaffold dev --profile local,ollama -f skaffold.yaml
 ```
 
 Access the services:
@@ -53,6 +53,8 @@ The backend provides REST APIs for document ingestion, search, and question-answ
 | `/api/v1/documents/{document_id}/ask`    | POST   | Question answering (RAG or reranking) |
 
 Interactive API documentation available at `/docs` (Swagger UI) or `/redoc` (ReDoc).
+
+**Note:** `document_id` refers to the document unique title.
 
 ## Architecture
 
