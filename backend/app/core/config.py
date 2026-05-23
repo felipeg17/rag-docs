@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # Cloud llm configuration
     use_vertex_ai: bool = Field(default=False, validation_alias="USE_VERTEX_AI")
 
+    # Cloud llm configuration
+    use_vertex_ai: Annotated[bool, Field(env="USE_VERTEX_AI")] = False
+
     # Ollama Configuration
     # ollama_model: str = Field(default="llama3.2")
     ollama_model: str = Field(default="qwen3:8b")
