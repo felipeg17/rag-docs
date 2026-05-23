@@ -25,7 +25,7 @@ portForward:
   - resourceType: service
     resourceName: chromadb
     port: 8000
-    localPort: 9001
+    localPort: 8000
 
 profiles:
   - name: local

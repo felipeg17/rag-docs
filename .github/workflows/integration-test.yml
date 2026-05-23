@@ -162,22 +162,22 @@ jobs:
         run: |
           echo "Setting up port forwarding..."
           kubectl port-forward svc/rag-docs-backend 8106:8106 &
-          kubectl port-forward svc/chromadb 9001:8000 &
-          kubectl port-forward svc/pgvector 6025:5432 &
+          kubectl port-forward svc/chromadb 8000:8000 &
+          kubectl port-forward svc/pgvector 6024:5432 &
           sleep 15
 
           # Verify port forwards
           curl -f --max-time 10 http://localhost:8106/health || (echo "Backend health check failed" && exit 1)
-          curl -f --max-time 10 http://localhost:9001/api/v2/heartbeat || (echo "ChromaDB health check failed" && exit 1)
-          nc -zv localhost 6025 || (echo "PGVector port-forward failed" && exit 1)
+          curl -f --max-time 10 http://localhost:8000/api/v2/heartbeat || (echo "ChromaDB health check failed" && exit 1)
+          nc -zv localhost 6024 || (echo "PGVector port-forward failed" && exit 1)
 
       - name: Run Behave integration tests
         env:
           BACKEND_URL: http://localhost:8106
           CHROMADB_HOST: localhost
-          CHROMADB_PORT: 9001
+          CHROMADB_PORT: 8000
           PGVECTOR_HOST: localhost
-          PGVECTOR_PORT: 6025
+          PGVECTOR_PORT: 6024
           PGVECTOR_USER: langchain
           PGVECTOR_PASSWORD: langchain
           PGVECTOR_DATABASE: langchain

@@ -10,10 +10,7 @@ class TestEmbeddingsClient(unittest.TestCase):
     def test_embeddings_client_openai_initialization(self, mock_openai_embeddings):
         # Arrange
         settings = Settings(
-            local_llm=False,
-            openai_api_key="test-key",
-            embeddings_model="embeddings-model",
-            use_vertex_ai=False,
+            local_llm=False, embeddings_model="embeddings-model", use_vertex_ai=False
         )
         mock_openai_embeddings.return_value = MagicMock()
 
@@ -27,14 +24,12 @@ class TestEmbeddingsClient(unittest.TestCase):
         )
         self.assertIsNotNone(client.client)
 
+    @patch("app.core.config._get_gcp_project_id", return_value="test-project")
     @patch("app.infrastructure.embeddings.client.VertexAIEmbeddings")
-    def test_embeddings_client_vertex_ai_initialization(self, mock_vertex_ai_embeddings):
+    def test_embeddings_client_vertex_ai_initialization(self, mock_vertex_ai_embeddings, _):
         # Arrange
         settings = Settings(
-            local_llm=False,
-            embeddings_model="embeddings-model",
-            use_vertex_ai=True,
-            vertex_ai_project="test-project",
+            local_llm=False, embeddings_model="embeddings-model", use_vertex_ai=True
         )
         mock_vertex_ai_embeddings.return_value = MagicMock()
 
