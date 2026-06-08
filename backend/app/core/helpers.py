@@ -50,6 +50,7 @@ def get_secret(secret_id: str) -> str:
             return env_var
         else:
             logger.warning(f"Secret {secret_id} not found in local environment.")
+            return ""
 
     try:
         project_id = _get_gcp_project_id()
@@ -69,5 +70,5 @@ def get_secret(secret_id: str) -> str:
         if env_var:
             return env_var
         else:
-            logger.error("Secret {secret_id} not found in local environment.")
+            logger.error(f"Secret {secret_id} not found in local environment.")
             raise
