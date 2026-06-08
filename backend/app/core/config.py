@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     # Embeddings Configuration
     # Embeddings model are model agnostic, but:
-    # - adda-002 performs better with openai models
+    # - ada-002 performs better with openai models
     # - text-multilingual-embedding-002 performs better with vertex ai models
     embeddings_model: str = Field(default="text-embedding-ada-002")
     # embeddings_model: str = Field(default="text-multilingual-embedding-002")
