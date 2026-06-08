@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,6 +7,7 @@ from app.core.helpers import VectorDBType, _get_gcp_project_id, get_secret
 class Settings(BaseSettings):
     """Application settings from environment variables."""
 
+    #! Important: Keep synced with k8s/base/backend/configmap.yaml and configmap-local.yaml
     # LLM configuration
     local_llm: bool = Field(default=False, validation_alias="LOCAL_LLM")
 
@@ -43,7 +42,9 @@ class Settings(BaseSettings):
     llm_top_p: float = Field(default=0.1)
 
     # Embeddings Configuration
-    # Embeddings model are model agnostic
+    # Embeddings model are model agnostic, but:
+    # - adda-002 performs better with openai models
+    # - text-multilingual-embedding-002 performs better with vertex ai models
     embeddings_model: str = Field(default="text-embedding-ada-002")
     # embeddings_model: str = Field(default="text-multilingual-embedding-002")
 
@@ -89,7 +90,6 @@ class Settings(BaseSettings):
     app_port: int = Field(default=8106)
 
     model_config = SettingsConfigDict(
-        env_file=str(Path(__file__).parent.parent.parent / "backend.env"),
         case_sensitive=False,
         extra="ignore",
         populate_by_name=True,

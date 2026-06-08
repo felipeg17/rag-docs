@@ -1,13 +1,8 @@
 import base64
 import os
 
-import dotenv
 import requests
 import streamlit as st
-
-
-# Cargar variables de entorno
-dotenv.load_dotenv()
 
 
 def show():

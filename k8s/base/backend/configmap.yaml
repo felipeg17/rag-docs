@@ -10,4 +10,5 @@ data:
   HOST: "0.0.0.0"
   PORT: "8106"
   LANGCHAIN_PROJECT: "rag-docs-integration"
+  LANGCHAIN_TRACING_V2: "false"
   VECTOR_DB_TYPE: "chroma"
