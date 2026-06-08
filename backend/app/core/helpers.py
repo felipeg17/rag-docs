@@ -28,12 +28,12 @@ def _get_gcp_project_id() -> str:
         return response.text
 
     except requests.RequestException:
-        logger.info("Not running in GCP environment, retrieving project_id using env var...")
+        logger.info("Not running in GCP environment, retrieving project_id from local environment.")
         return os.getenv("PROJECT_ID", "")
 
     except Exception as e:
         logger.info(f"Exception: {e}")
-        logger.info("Running locally, retrieving project_id using env var...")
+        logger.info("Running locally, retrieving project_id using local environment.")
         return os.getenv("PROJECT_ID", "")
 
 
@@ -44,8 +44,13 @@ def get_secret(secret_id: str) -> str:
     use_gcp_secrets = os.getenv("USE_SECRETS", "false").lower() == "true"
 
     if not use_gcp_secrets:
-        logger.info(f"Using env var for secret: {secret_id}")
-        return os.getenv(secret_id.upper().replace("-", "_"), "")
+        logger.info(f"Using local environment variable for secret: {secret_id}")
+        env_var = os.getenv(secret_id.upper().replace("-", "_"))
+        if env_var:
+            return env_var
+        else:
+            logger.warning(f"Secret {secret_id} not found in local environment.")
+            return ""
 
     try:
         project_id = _get_gcp_project_id()
@@ -55,10 +60,15 @@ def get_secret(secret_id: str) -> str:
         return response.payload.data.decode("UTF-8")
 
     except GoogleAPIError:
-        logger.info(f"Secret {secret_id} not found in GCP Secret Manager.")
-        return ""
+        logger.error(f"Secret {secret_id} not found in GCP Secret Manager.")
+        raise
 
     except Exception as e:
         logger.info(f"Exception: {e}")
-        logger.info("Trying to retrieve from env var...")
-        return os.getenv(secret_id.upper().replace("-", "_"), "")
+        logger.info("Trying to retrieve as an env variable as a fallback")
+        env_var = os.getenv(secret_id.upper().replace("-", "_"))
+        if env_var:
+            return env_var
+        else:
+            logger.error(f"Secret {secret_id} not found in local environment.")
+            raise
