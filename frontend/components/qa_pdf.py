@@ -1,10 +1,9 @@
 import base64
-import os
 
 import requests
 import streamlit as st
 
-from frontend.utils.utils import load_backend_config
+from utils.utils import load_backend_config
 
 
 def show():
