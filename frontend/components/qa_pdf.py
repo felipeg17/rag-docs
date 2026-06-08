@@ -1,13 +1,9 @@
 import base64
-import os
 
-import dotenv
 import requests
 import streamlit as st
 
-
-# Cargar variables de entorno
-dotenv.load_dotenv()
+from utils.utils import load_backend_config
 
 
 def show():
@@ -19,7 +15,7 @@ def show():
         document_type = "documento-pdf"
 
         if st.button("Cargar documento", key="procesar"):
-            url = f"http://{os.getenv('API_HOST')}:{os.getenv('API_PORT')}/"
+            url = load_backend_config()
             endpoint = "api/v1/documents"
             with st.spinner("Procesando documento..."):
                 payload = {

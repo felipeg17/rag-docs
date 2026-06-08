@@ -25,6 +25,8 @@ async def lifespan(app: FastAPI):
     # Verify database connection
     if get_db_client().heartbeat():
         logger.info("Database connection successful")
+    else:
+        logger.error("Database connection failed")
 
     # Verify vector database connection based on config
     if settings.vector_db_type == VectorDBType.PGVECTOR:

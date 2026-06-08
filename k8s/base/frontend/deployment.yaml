@@ -21,11 +21,9 @@ spec:
           ports:
             - containerPort: 8502
               name: http
-          env:
-            - name: API_HOST
-              value: "rag-docs-backend"
-            - name: API_PORT
-              value: "8106"
+          envFrom:
+            - configMapRef:
+                name: frontend-config
           resources:
             requests:
               memory: "256Mi"

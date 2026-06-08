@@ -20,6 +20,7 @@ manifests:
   rawYaml:
     - deployment.yaml
     - service.yaml
+    - configmap.yaml
 
 deploy:
   kubectl: {}
