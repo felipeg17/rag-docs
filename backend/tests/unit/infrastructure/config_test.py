@@ -21,9 +21,7 @@ class TestGetVectorSize(unittest.TestCase):
         self.assertEqual(settings.get_vector_size(), 3072)
 
     def test_vertex_ai_multilingual_returns_768(self):
-        settings = Settings(
-            local_llm=False, embeddings_model="text-multilingual-embedding-002"
-        )
+        settings = Settings(local_llm=False, embeddings_model="text-multilingual-embedding-002")
         self.assertEqual(settings.get_vector_size(), 768)
 
     def test_unknown_model_defaults_to_768(self):
