@@ -36,7 +36,7 @@ pytest tests/unit -v
 
 ### Integration Tests (BDD)
 
-Feature files use Gherkin syntax and live in `backend/tests/behave/features/`:
+Feature files use Gherkin syntax and live in `backend/tests/behave/`:
 
 ```gherkin
 Feature: Question Answering
@@ -56,7 +56,7 @@ uv run behave -v backend/tests/behave/
 Run a single feature file:
 
 ```bash
-uv run behave -v backend/tests/behave/features/document_ingestion.feature
+uv run behave -v backend/tests/behave/document_ingestion.feature
 ```
 
 ### Linting and Type Checking

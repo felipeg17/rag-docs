@@ -9,7 +9,7 @@
 
 ## Environment Setup
 
-Each component has a `env-template.env` with a reference of the most important environment variables.
+Each component has its own `.env.template` file (e.g., `backend/backend.env.template`, `frontend/frontend.env.template`) listing the most important environment variables.
 
 ### Backend Configuration
 
