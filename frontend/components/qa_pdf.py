@@ -4,6 +4,8 @@ import os
 import requests
 import streamlit as st
 
+from frontend.utils.utils import load_backend_config
+
 
 def show():
     st.title("Cargar documento PDF")
@@ -14,7 +16,7 @@ def show():
         document_type = "documento-pdf"
 
         if st.button("Cargar documento", key="procesar"):
-            url = f"http://{os.getenv('API_HOST')}:{os.getenv('API_PORT')}/"
+            url = load_backend_config()
             endpoint = "api/v1/documents"
             with st.spinner("Procesando documento..."):
                 payload = {

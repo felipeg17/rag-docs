@@ -1,7 +1,7 @@
-import os
-
 import requests
 import streamlit as st
+
+from frontend.utils.utils import load_backend_config
 
 
 def show():
@@ -11,7 +11,7 @@ def show():
     question_text = st.text_input("Ingrese la pregunta al documento")
 
     if st.button("Preguntar al PDF", key="procesar"):
-        url = f"http://{os.getenv('API_HOST')}:{os.getenv('API_PORT')}/"
+        url = load_backend_config()
         endpoint = f"api/v1/documents/{document_title}/ask"
         with st.spinner("Procesando pregunta..."):
             payload = {
