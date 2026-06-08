@@ -11,4 +11,5 @@ data:
   PORT: "8106"
   LANGCHAIN_PROJECT: "rag-docs-integration"
   LANGCHAIN_TRACING_V2: "false"
+  USE_SECRETS: "false"
   VECTOR_DB_TYPE: "chroma"

@@ -101,30 +101,6 @@ jobs:
         working-directory: ./backend
         run: uv sync --extra integration
 
-      - name: Prepare .env files for Docker build
-        run: |
-          echo "Creating .env files from templates..."
-          cp backend/backend.env.template backend/backend.env
-          cp frontend/frontend.env.template frontend/frontend.env
-
-      - name: Build Docker images
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          echo "Building images with tag: ${IMAGE_TAG}"
-
-          # Point Docker CLI to Minikube's Docker daemon
-          eval $(minikube -p minikube docker-env)
-
-          # Build images directly in Minikube
-          docker build -t pgvector-init:${IMAGE_TAG} -f k8s/base/vectordb/pgvector/Dockerfile k8s/base/vectordb/pgvector
-          docker build -t chromadb-init:${IMAGE_TAG} -f k8s/base/vectordb/chroma/Dockerfile k8s/base/vectordb/chroma
-          docker build -t rag-docs-backend:${IMAGE_TAG} -f backend/Dockerfile backend
-          docker build -t rag-docs-frontend:${IMAGE_TAG} -f frontend/Dockerfile frontend
-
-          # Verify images
-          docker images | grep ${IMAGE_TAG}
-
       - name: Create Kubernetes secrets
         env:
           OPENAI_API_KEY: ${{ steps.secrets.outputs.OPENAI_API_KEY }}
@@ -140,50 +116,28 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           CI: true
         run: |
-          skaffold run -p ci,chroma --default-repo="" --tag=${IMAGE_TAG}
+          eval $(minikube -p minikube docker-env)
+          skaffold run -p ci,chroma --default-repo=""
 
-      - name: Wait for deployments to be ready
-        run: |
-          echo "Waiting for postgres"
-          kubectl wait --for=condition=ready pod -l app=pgvector --timeout=100s
-
-          echo "Waiting for ChromaDB..."
-          kubectl wait --for=condition=ready pod -l app=chromadb --timeout=100s
-
-          echo "Waiting for Backend..."
-          kubectl wait --for=condition=ready pod -l app=rag-docs-backend --timeout=100s
-
-          echo "Waiting for Frontend..."
-          kubectl wait --for=condition=ready pod -l app=rag-docs-frontend --timeout=100s
-
-          kubectl get pods
-
-      - name: Setup port forwarding
-        run: |
-          echo "Setting up port forwarding..."
-          kubectl port-forward svc/rag-docs-backend 8106:8106 &
-          kubectl port-forward svc/chromadb 8000:8000 &
-          kubectl port-forward svc/pgvector 6024:5432 &
-          sleep 15
-
-          # Verify port forwards
-          curl -f --max-time 10 http://localhost:8106/health || (echo "Backend health check failed" && exit 1)
-          curl -f --max-time 10 http://localhost:8000/api/v2/heartbeat || (echo "ChromaDB health check failed" && exit 1)
-          nc -zv localhost 6024 || (echo "PGVector port-forward failed" && exit 1)
-
-      - name: Run Behave integration tests
+      - name: Run integration tests
         env:
           BACKEND_URL: http://localhost:8106
           CHROMADB_HOST: localhost
-          CHROMADB_PORT: 8000
+          CHROMADB_PORT: "8000"
           PGVECTOR_HOST: localhost
-          PGVECTOR_PORT: 6024
+          PGVECTOR_PORT: "6024"
           PGVECTOR_USER: langchain
           PGVECTOR_PASSWORD: langchain
           PGVECTOR_DATABASE: langchain
           DB_SCHEMA: app
           VECTOR_DB_TYPE: chroma
         run: |
+          kubectl port-forward svc/rag-docs-backend 8106:8106 &
+          kubectl port-forward svc/chromadb 8000:8000 &
+          kubectl port-forward svc/pgvector 6024:5432 &
+
+          until curl -sf http://localhost:8106/health; do sleep 2; done
+
           cd backend/tests/behave
           uv run behave --format=pretty --format=json --outfile=behave-results.json
 
