@@ -9,23 +9,16 @@
 
 ## Environment Setup
 
-### Copy Template Configuration
+Each component has a `env-template.env` with a reference of the most important environment variables.
 
-```bash
-cd backend
-cp backend.env.template backend.env
-cd ../frontend
-cp frontend.env.template frontend.env
-cd ..
-```
+### Backend Configuration
 
-### Backend Configuration (backend.env)
-
-#### LLM Provider Selection
+### LLM Provider Selection
 
 Choose one of three setups:
 
 **Option A: Ollama (Local, Recommended for Development)**
+
 ```bash
 LOCAL_LLM=true
 OLLAMA_BASE_URL=http://ollama:11434
@@ -34,6 +27,7 @@ OLLAMA_EMBEDDINGS_MODEL=nomic-embed-text-v2-moe
 ```
 
 **Option B: OpenAI**
+
 ```bash
 LOCAL_LLM=false
 USE_VERTEX_AI=false
@@ -41,13 +35,14 @@ OPENAI_API_KEY=sk-...
 ```
 
 **Option C: Vertex AI**
+
 ```bash
 LOCAL_LLM=false
 USE_VERTEX_AI=true
 GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 ```
 
-#### Vector Database Selection
+### Vector Database Selection
 
 ```bash
 # ChromaDB (default)
@@ -64,7 +59,7 @@ PGVECTOR_PASSWORD=langchain
 PGVECTOR_DATABASE=langchain
 ```
 
-#### Secrets Management
+### Secrets Management
 
 ```bash
 # Option 1: Environment variables (default)
@@ -84,34 +79,6 @@ When `USE_SECRETS=false`, the app reads `OPENAI_API_KEY` and `COHERE_API_KEY` fr
 ```bash
 API_HOST=localhost
 API_PORT=8106
-```
-
-## Docker Compose Setup
-
-### Start All Services
-
-```bash
-# From project root
-docker compose --env-file image.env --profile full up --build
-```
-
-### Start Backend Only
-
-```bash
-docker compose --profile backend up --build
-```
-
-### View Logs
-
-```bash
-docker compose logs -f rag-docs-backend
-docker compose logs -f rag-docs-frontend
-```
-
-### Stop Services
-
-```bash
-docker compose down
 ```
 
 ## Local Development
