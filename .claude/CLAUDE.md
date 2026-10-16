@@ -26,7 +26,8 @@ Product changes go through specs: `docs/specs/README.md` (lifecycle, ownership),
 | `qa-agent` | sonnet | AC verification, behave suite, closes specs |
 
 - All agents work in the same checkout on the branch the architect defines for the spec
-  (`spec/SPEC-NNN-<slug>`), one agent at a time, each committing only its own files.
+  (`spec/SPEC-NNN-<slug>`), one agent at a time, each changing only its own files.
+- Nobody commits (agents or main session) unless the user explicitly says so.
 - Agents cannot spawn agents; the main session orchestrates them through `/spec`.
 
 ## Gate baseline (`dev` @ 83304a4, 2026-10-15)

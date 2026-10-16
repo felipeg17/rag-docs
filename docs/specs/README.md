@@ -55,7 +55,8 @@ Defined in `.claude/agents/`. Ownership is exclusive: an agent edits only its pa
 | `qa-agent` | sonnet | `backend/tests/behave/`, spec *Verification*, finding *Status* |
 
 All agents work on the branch the architect defines for the spec (`spec/SPEC-NNN-<slug>`, from
-`dev`), one at a time, each committing only the files of its own tasks. No agent spawns other
+`dev`), one at a time, each changing only the files of its own tasks. Nothing is committed unless the user
+explicitly asks. No agent spawns other
 agents: orchestration lives in the `/spec` skill.
 
 ## Index

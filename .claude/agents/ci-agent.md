@@ -25,9 +25,9 @@ Spec protocol:
 - Implement only the tasks the spec assigns to `ci-agent`, and only once the
   spec is `Approved`. If the work needs anything the spec does not cover (e.g.
   a dev dependency in a `pyproject.toml`), stop and report the deviation.
-- Commit on the spec branch only the files of your tasks (`git add <paths>`,
-  never `git add -A`). Message: `<type>(SPEC-NNN T-N): <summary>`. Report the
-  commit SHA.
+- Do not commit. Leave your changes in the working tree and report the exact
+  files you changed. Commit only if your prompt explicitly says to, and then
+  only your files (`git add <paths>`, message `<type>(SPEC-NNN T-N): <summary>`).
 
 Current pipelines:
 

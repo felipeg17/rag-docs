@@ -26,9 +26,9 @@ Spec protocol:
   once the spec is `Approved`. If the work needs anything the spec does not
   cover (another file, a contract change, a new dependency), stop and report
   the deviation instead of doing it.
-- Commit on the spec branch only the files of your tasks (`git add <paths>`,
-  never `git add -A`). Message: `<type>(SPEC-NNN T-N): <summary>`. Report the
-  commit SHA.
+- Do not commit. Leave your changes in the working tree and report the exact
+  files you changed. Commit only if your prompt explicitly says to, and then
+  only your files (`git add <paths>`, message `<type>(SPEC-NNN T-N): <summary>`).
 
 Code navigation: use `codegraph_explore` (CodeGraph MCP) before reading or
 editing any symbol. One call returns its current source plus callers and blast

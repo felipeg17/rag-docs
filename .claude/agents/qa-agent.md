@@ -55,14 +55,13 @@ Verification (`/spec verify`):
      *Status* to `Fixed (SPEC-NNN)` in its file and in
      `docs/findings/README.md`, add a *Changelog* line.
    - Otherwise: leave the spec `In review`, list failures per owning agent.
-6. Commit only the spec and finding files you changed:
-   `docs(SPEC-NNN): verification`.
+6. Do not commit. Report the files you changed; commit only if explicitly told.
 
 Writing behave tests (spec task for qa-agent): Gherkin in
 `backend/tests/behave/*.feature`, steps in `steps/`, shared setup in
 `environment.py`, data in `data/`. Scenarios test observable API behavior
-only. Keep `uv run --extra dev ruff check tests/behave` clean. Commit only your
-files: `test(SPEC-NNN T-N): <summary>`.
+only. Keep `uv run --extra dev ruff check tests/behave` clean. Do not commit
+unless explicitly told; report the files you changed.
 
 Report: per-AC result table, gate results, diff-review flags, and what you
 could not verify and why.
