@@ -6,7 +6,8 @@ Tracked improvement opportunities and defects. Each finding is one file so it ca
 
 1. **Record**: copy an existing finding as a template; use the next free `F-NNN` id. Never reuse ids.
 2. **Track**: open a GitHub issue, link it in the finding's *Tracking issue* field and in the table below.
-3. **Resolve**: set *Status* to `Fixed` (with PR link) or `Won't fix` (with reason). Keep the file for history.
+   To fix it, run `/spec new F-NNN` (see [specs](../specs/README.md)).
+3. **Resolve**: `qa-engineer` sets *Status* to `Fixed (SPEC-NNN)` when the spec is verified, or the user sets `Fixed` (with PR link) or `Won't fix` (with reason). Keep the file for history.
 
 | Field | Values |
 |---|---|

@@ -1,5 +1,10 @@
-# claude
-.claude/
+# claude: shared harness is versioned, local state is not
+.claude/*
+!.claude/agents/
+!.claude/skills/
+!.claude/commands/
+!.claude/CLAUDE.md
+!.claude/settings.json
 
 
 # venv
