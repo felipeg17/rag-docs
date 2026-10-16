@@ -4,7 +4,7 @@
 |---|---|
 | Severity | High |
 | Category | correctness |
-| Status | Open |
+| Status | Fixed (SPEC-001) |
 | Verification | Confirmed — 2026-10-15, architect, `dev` @ `200c4cf`: re-read `qa_service.py:55-62`, `rerank_service.py:65-72`, `repository.py:54`, `pgvector_repository.py:68`, `search_request.py:9,18`, `document.py:134-138,191-224`; no `titulo` clause reaches retrieval on either backend. See [SPEC-001](../specs/SPEC-001-scope-retrieval-to-document.md) |
 | Tracking issue | — |
 | Found | 2026-10-15 — [repo audit](README.md#audits) |
