@@ -47,7 +47,7 @@ Endpoint handler
 ## Configuration
 
 Each component has its own `.env` file (`backend/backend.env`, `frontend/frontend.env`) — copy from the `.env.template`. 
-See `docs/SETUP.md` for all variables and LLM/vector DB options.
+See `docs/guides/setup.md` for all variables and LLM/vector DB options.
 
 ## Common Commands
 
@@ -64,8 +64,9 @@ skaffold dev --profile local,ollama -f skaffold.yaml
 
 ## Documentation
 
-- `docs/ARCHITECTURE.md` — service details, DB schema, LLM providers, DI flow
-- `docs/SETUP.md` — env vars, local dev, Kubernetes/Skaffold setup
-- `docs/TESTING.md` — test structure, CI/CD
-- `docs/CONTRIBUTING.md` — branching, code style, PR process
+- `docs/reference/architecture.md` — service details, DB schema, LLM providers, DI flow
+- `docs/guides/setup.md` — env vars, local dev, Kubernetes/Skaffold setup
+- `docs/development/testing.md` — test structure, CI/CD
+- `docs/development/contributing.md` — branching, code style, PR process
+- `docs/findings/` — tracked defects/improvements (one file per finding, `F-NNN`)
 - `k8s/README.md` — minikube cluster setup and Skaffold profiles
