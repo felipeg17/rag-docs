@@ -3,8 +3,8 @@ name: spec
 description: >
   Spec-driven development pipeline for rag-docs. Drives the domain agents in
   .claude/agents/ through docs/specs/: architect defines the spec and its
-  branch from findings or a request, the user approves, engineers implement
-  their tasks on that branch, qa-engineer verifies every acceptance criterion.
+  branch from findings or a request, the user approves, domain agents implement
+  their tasks on that branch, qa-agent verifies every acceptance criterion.
   Invoked by the user as /spec.
 argument-hint: "new <F-NNN…|request> | approve SPEC-NNN | implement SPEC-NNN | verify SPEC-NNN | status"
 disable-model-invocation: true
@@ -64,7 +64,7 @@ in `docs/specs/README.md`, add a *Changelog* line, commit
 
 ## verify SPEC-NNN
 
-1. Switch to the spec branch. Spawn `qa-engineer` with the spec path and
+1. Switch to the spec branch. Spawn `qa-agent` with the spec path and
    branch name. It commits the *Verification* section and finding statuses.
 2. `Done`: show the user the verification table and offer to push and open a
    PR to `dev` (title `SPEC-NNN: <title>`, body: summary, ACs with results,

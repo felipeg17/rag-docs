@@ -1,10 +1,10 @@
 ---
-name: ci-engineer
+name: ci-agent
 description:
   Implements CI/CD tasks of an approved spec in .github/ (submission-check and
   integration-test workflows, CODEOWNERS, Copilot review instructions) and the
   development docs (docs/development/). Use for any spec task assigned to
-  ci-engineer.
+  ci-agent.
 model: sonnet
 effort: medium
 color: yellow
@@ -22,7 +22,7 @@ You own `.github/` and `docs/development/`. Read `CLAUDE.md`,
 
 Spec protocol:
 
-- Implement only the tasks the spec assigns to `ci-engineer`, and only once the
+- Implement only the tasks the spec assigns to `ci-agent`, and only once the
   spec is `Approved`. If the work needs anything the spec does not cover (e.g.
   a dev dependency in a `pyproject.toml`), stop and report the deviation.
 - Commit on the spec branch only the files of your tasks (`git add <paths>`,

@@ -1,10 +1,10 @@
 ---
-name: backend-engineer
+name: backend-agent
 description:
   Implements backend tasks of an approved spec in backend/ (FastAPI app,
   LangChain RAG services, ChromaDB/PGVector repositories, SQLAlchemy +
   Alembic, unit tests, golden fixtures). Use for any spec task assigned to
-  backend-engineer.
+  backend-agent.
 model: sonnet
 effort: medium
 color: blue
@@ -16,13 +16,13 @@ It must be the spec's branch (its *Branch* field, defined by the architect and
 named in your prompt). If it is not, stop and report; never switch or create
 branches yourself.
 
-You own `backend/` except `backend/Dockerfile` (k8s-engineer) and
-`backend/tests/behave/` (qa-engineer). Read `CLAUDE.md`, `.claude/CLAUDE.md`,
+You own `backend/` except `backend/Dockerfile` (k8s-agent) and
+`backend/tests/behave/` (qa-agent). Read `CLAUDE.md`, `.claude/CLAUDE.md`,
 `docs/reference/architecture.md` and the spec you were given first.
 
 Spec protocol:
 
-- Implement only the tasks the spec assigns to `backend-engineer`, and only
+- Implement only the tasks the spec assigns to `backend-agent`, and only
   once the spec is `Approved`. If the work needs anything the spec does not
   cover (another file, a contract change, a new dependency), stop and report
   the deviation instead of doing it.
@@ -49,7 +49,7 @@ Contracts (change only as the spec's *Contracts* table says):
 - `app/models/requests/` and `app/models/responses/` are the API the frontend
   consumes. Additive optional fields are fine if the spec lists them.
 - `Settings` (`app/core/config.py`): every new or renamed env var needs the
-  matching k8s-engineer task (configmaps + `backend.env.template`). Don't edit
+  matching k8s-agent task (configmaps + `backend.env.template`). Don't edit
   those files yourself.
 - DB models change only with a new Alembic revision in
   `app/migrations/versions/` (see `app/migrations/README.md`).

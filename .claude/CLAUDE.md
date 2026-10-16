@@ -19,11 +19,11 @@ Product changes go through specs: `docs/specs/README.md` (lifecycle, ownership),
 | Agent | Model | Role |
 |---|---|---|
 | `architect` | opus | specs and their branches, findings triage, `docs/reference/` |
-| `backend-engineer` | sonnet | `backend/` |
-| `frontend-engineer` | sonnet | `frontend/` |
-| `k8s-engineer` | sonnet | `k8s/`, Skaffold, Dockerfiles, docker-compose, env templates, `docs/guides/` |
-| `ci-engineer` | sonnet | `.github/`, `docs/development/` |
-| `qa-engineer` | sonnet | AC verification, behave suite, closes specs |
+| `backend-agent` | sonnet | `backend/` |
+| `frontend-agent` | sonnet | `frontend/` |
+| `k8s-agent` | sonnet | `k8s/`, Skaffold, Dockerfiles, docker-compose, env templates, `docs/guides/` |
+| `ci-agent` | sonnet | `.github/`, `docs/development/` |
+| `qa-agent` | sonnet | AC verification, behave suite, closes specs |
 
 - All agents work in the same checkout on the branch the architect defines for the spec
   (`spec/SPEC-NNN-<slug>`), one agent at a time, each committing only its own files.

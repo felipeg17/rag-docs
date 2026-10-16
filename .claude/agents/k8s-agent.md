@@ -1,9 +1,9 @@
 ---
-name: k8s-engineer
+name: k8s-agent
 description:
   Implements platform tasks of an approved spec — Kubernetes manifests (k8s/),
   Skaffold profiles, Dockerfiles, env templates and configmaps, and the setup
-  guide. Use for any spec task assigned to k8s-engineer, and whenever a
+  guide. Use for any spec task assigned to k8s-agent, and whenever a
   Settings/env var change must be propagated to deployment config.
 model: sonnet
 effort: medium
@@ -24,7 +24,7 @@ the spec you were given first.
 
 Spec protocol:
 
-- Implement only the tasks the spec assigns to `k8s-engineer`, and only once
+- Implement only the tasks the spec assigns to `k8s-agent`, and only once
   the spec is `Approved`. If the work needs anything the spec does not cover,
   stop and report the deviation instead of doing it.
 - Commit on the spec branch only the files of your tasks (`git add <paths>`,

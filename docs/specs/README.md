@@ -12,7 +12,7 @@ finding / request
 architect   → SPEC-NNN (Draft)
       ↓  user review → Approved          ← nothing is implemented before this
       ↓  /spec implement
-engineers   → tasks on branch spec/SPEC-NNN-<slug> (In progress)
+agents      → tasks on branch spec/SPEC-NNN-<slug> (In progress)
       ↓  /spec verify
 qa          → every AC checked (In review → Done, or back to In progress)
       ↓
@@ -48,11 +48,11 @@ Defined in `.claude/agents/`. Ownership is exclusive: an agent edits only its pa
 | Agent | Model | Owns |
 |---|---|---|
 | `architect` | opus | spec branch, `docs/specs/`, `docs/findings/`, `docs/reference/`, `docs/README.md`, root `README.md` and `CLAUDE.md` |
-| `backend-engineer` | sonnet | `backend/` (except `Dockerfile`, `tests/behave/`) |
-| `frontend-engineer` | sonnet | `frontend/` (except `Dockerfile`) |
-| `k8s-engineer` | sonnet | `k8s/`, `skaffold.yaml`, `docker-compose.yaml`, all `Dockerfile`s, `*.env.template`, `docs/guides/` |
-| `ci-engineer` | sonnet | `.github/`, `docs/development/` |
-| `qa-engineer` | sonnet | `backend/tests/behave/`, spec *Verification*, finding *Status* |
+| `backend-agent` | sonnet | `backend/` (except `Dockerfile`, `tests/behave/`) |
+| `frontend-agent` | sonnet | `frontend/` (except `Dockerfile`) |
+| `k8s-agent` | sonnet | `k8s/`, `skaffold.yaml`, `docker-compose.yaml`, all `Dockerfile`s, `*.env.template`, `docs/guides/` |
+| `ci-agent` | sonnet | `.github/`, `docs/development/` |
+| `qa-agent` | sonnet | `backend/tests/behave/`, spec *Verification*, finding *Status* |
 
 All agents work on the branch the architect defines for the spec (`spec/SPEC-NNN-<slug>`, from
 `dev`), one at a time, each committing only the files of its own tasks. No agent spawns other

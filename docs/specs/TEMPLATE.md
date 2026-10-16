@@ -56,8 +56,8 @@ How it will be built: components touched, data flow, alternatives considered and
 
 | ID | Task | Agent | Depends on | Files | Status |
 |---|---|---|---|---|---|
-| T-1 | … | backend-engineer | — | `backend/app/…` | Todo |
-| T-2 | … | qa-engineer | T-1 | `backend/tests/behave/…` | Todo |
+| T-1 | … | backend-agent | — | `backend/app/…` | Todo |
+| T-2 | … | qa-agent | T-1 | `backend/tests/behave/…` | Todo |
 
 Status: `Todo` · `Doing` · `Done` · `Blocked (<reason>)`.
 
@@ -67,7 +67,7 @@ Status: `Todo` · `Doing` · `Done` · `Blocked (<reason>)`.
 
 ## Verification
 
-Filled by `qa-engineer` during `/spec verify`.
+Filled by `qa-agent` during `/spec verify`.
 
 | AC | Result | Evidence |
 |---|---|---|

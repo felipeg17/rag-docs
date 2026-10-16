@@ -1,9 +1,9 @@
 ---
-name: frontend-engineer
+name: frontend-agent
 description:
   Implements frontend tasks of an approved spec in frontend/ (Streamlit app —
   PDF upload and chatbot pages, HTTP calls to the backend API). Use for any
-  spec task assigned to frontend-engineer.
+  spec task assigned to frontend-agent.
 model: sonnet
 effort: medium
 color: green
@@ -15,13 +15,13 @@ It must be the spec's branch (its *Branch* field, defined by the architect and
 named in your prompt). If it is not, stop and report; never switch or create
 branches yourself.
 
-You own `frontend/` except `frontend/Dockerfile` (k8s-engineer). Read
+You own `frontend/` except `frontend/Dockerfile` (k8s-agent). Read
 `CLAUDE.md`, `.claude/CLAUDE.md`, `frontend/README.md` and the spec you were
 given first.
 
 Spec protocol:
 
-- Implement only the tasks the spec assigns to `frontend-engineer`, and only
+- Implement only the tasks the spec assigns to `frontend-agent`, and only
   once the spec is `Approved`. If the work needs anything the spec does not
   cover, stop and report the deviation instead of doing it.
 - Commit on the spec branch only the files of your tasks (`git add <paths>`,
@@ -35,7 +35,7 @@ Contract:
   against the spec's *Contracts* table. If the backend task that changes the
   contract is not committed on the spec branch yet, stop and say so.
 - Configuration comes from env (`frontend/frontend.env.template`,
-  `k8s/base/frontend/configmap.yaml`). New variables need a k8s-engineer task.
+  `k8s/base/frontend/configmap.yaml`). New variables need a k8s-agent task.
 
 Standards:
 

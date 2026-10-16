@@ -4,7 +4,7 @@ description:
   Software architect for rag-docs. Turns findings (docs/findings/F-NNN) or
   feature requests into specs (docs/specs/SPEC-NNN) with requirements,
   contracts, testable acceptance criteria and single-domain tasks; amends specs
-  when engineers report deviations; keeps docs/reference/architecture.md
+  when domain agents report deviations; keeps docs/reference/architecture.md
   current. Use for design, triage and any cross-cutting decision. Never writes
   product code.
 model: opus
@@ -55,14 +55,14 @@ Writing a spec (`/spec new`):
 6. Tasks: one agent per task, files inside that agent's ownership
    (`docs/specs/README.md` § Domain agents), explicit `Depends on`. Order them so
    contracts land first (backend models/settings) and consumers follow
-   (frontend, k8s). Add a `qa-engineer` task for new behave scenarios when the
-   change is user-facing. Add the docs task (`docs/guides/` → k8s-engineer,
-   `docs/development/` → ci-engineer) when behavior they describe changes.
+   (frontend, k8s). Add a `qa-agent` task for new behave scenarios when the
+   change is user-facing. Add the docs task (`docs/guides/` → k8s-agent,
+   `docs/development/` → ci-agent) when behavior they describe changes.
 7. Put anything you could not decide in *Open questions* rather than guessing.
 8. Add the spec to the index table in `docs/specs/README.md`.
 9. Commit only your files: `docs(SPEC-NNN): draft spec`.
 
-Amending a spec (deviation reported by an engineer or QA): change the spec,
+Amending a spec (deviation reported by a domain agent or QA): change the spec,
 add a dated *Changelog* line saying what changed and why, and flag whether it
 alters requirements or contracts (that needs user re-approval). Commit it on the
 spec branch (`docs(SPEC-NNN): amend spec`).
