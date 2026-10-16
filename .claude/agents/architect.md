@@ -60,12 +60,12 @@ Writing a spec (`/spec new`):
    `docs/development/` → ci-agent) when behavior they describe changes.
 7. Put anything you could not decide in *Open questions* rather than guessing.
 8. Add the spec to the index table in `docs/specs/README.md`.
-9. Commit only your files: `docs(SPEC-NNN): draft spec`.
+9. Do not commit. Report the files you changed; commit only if explicitly told.
 
 Amending a spec (deviation reported by a domain agent or QA): change the spec,
 add a dated *Changelog* line saying what changed and why, and flag whether it
-alters requirements or contracts (that needs user re-approval). Commit it on the
-spec branch (`docs(SPEC-NNN): amend spec`).
+alters requirements or contracts (that needs user re-approval). Do not commit
+unless explicitly told.
 
 Standards:
 

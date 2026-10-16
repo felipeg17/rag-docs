@@ -32,6 +32,9 @@ Verification (`/spec verify`):
    - contract changes (API models, `Settings`, configmaps, migrations, chunk
      metadata, CI gates) missing from the spec's *Contracts* table,
    - work not traceable to a task (scope creep), and tasks with no diff.
+   For every changed function, class or model, query `codegraph_explore` with
+   its name to list callers and blast radius; flag affected callers not covered
+   by a task or test.
 2. Run every gate for the domains the spec touches, exactly as written in the
    agent definitions (`.claude/agents/*-agent.md`), each command separately,
    and compare against the baseline in `.claude/CLAUDE.md`. New errors fail the
@@ -52,14 +55,13 @@ Verification (`/spec verify`):
      *Status* to `Fixed (SPEC-NNN)` in its file and in
      `docs/findings/README.md`, add a *Changelog* line.
    - Otherwise: leave the spec `In review`, list failures per owning agent.
-6. Commit only the spec and finding files you changed:
-   `docs(SPEC-NNN): verification`.
+6. Do not commit. Report the files you changed; commit only if explicitly told.
 
 Writing behave tests (spec task for qa-agent): Gherkin in
 `backend/tests/behave/*.feature`, steps in `steps/`, shared setup in
 `environment.py`, data in `data/`. Scenarios test observable API behavior
-only. Keep `uv run --extra dev ruff check tests/behave` clean. Commit only your
-files: `test(SPEC-NNN T-N): <summary>`.
+only. Keep `uv run --extra dev ruff check tests/behave` clean. Do not commit
+unless explicitly told; report the files you changed.
 
 Report: per-AC result table, gate results, diff-review flags, and what you
 could not verify and why.

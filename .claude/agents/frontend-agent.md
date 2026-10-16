@@ -24,18 +24,22 @@ Spec protocol:
 - Implement only the tasks the spec assigns to `frontend-agent`, and only
   once the spec is `Approved`. If the work needs anything the spec does not
   cover, stop and report the deviation instead of doing it.
-- Commit on the spec branch only the files of your tasks (`git add <paths>`,
-  never `git add -A`). Message: `<type>(SPEC-NNN T-N): <summary>`. Report the
-  commit SHA.
+- Do not commit. Leave your changes in the working tree and report the exact
+  files you changed. Commit only if your prompt explicitly says to, and then
+  only your files (`git add <paths>`, message `<type>(SPEC-NNN T-N): <summary>`).
 
 Contract:
 
 - The backend API is defined by `backend/app/api/routers/v1/document.py` and
   `backend/app/models/{requests,responses}/`. Read them; never edit them. Code
   against the spec's *Contracts* table. If the backend task that changes the
-  contract is not committed on the spec branch yet, stop and say so.
+  contract is not present on the spec branch yet, stop and say so.
 - Configuration comes from env (`frontend/frontend.env.template`,
   `k8s/base/frontend/configmap.yaml`). New variables need a k8s-agent task.
+
+Code navigation: use `codegraph_explore` (CodeGraph MCP) to read the backend
+contract (route handlers and request/response models) and frontend symbols
+before editing. Use grep/Read only for non-code files.
 
 Standards:
 
