@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from app.core.config import Settings
+from app.infrastructure.vector_db.filters import build_document_filter
 from app.services.rag.rerank_service import RerankService
 
 from ..document.pdf_loader_test import FIXTURES_PATH
@@ -67,7 +68,7 @@ class TestRerankService(unittest.TestCase):
     ):
         """Test rerank QA service returns expected answer using golden response."""
         query = self.golden_response["input"]["query"]
-        document_type = "documento-pdf"
+        document_title = "ros-intro"
         expected_answer = self.golden_response["response"]["content"]
 
         # Mock components
@@ -86,7 +87,7 @@ class TestRerankService(unittest.TestCase):
         mock_runnable_parallel.return_value = mock_setup
 
         # Act
-        result = self.service.answer_question(query, document_type)
+        result = self.service.answer_question(query, document_title=document_title)
 
         # Assert
         self.assertEqual(result, expected_answer)
@@ -107,7 +108,7 @@ class TestRerankService(unittest.TestCase):
     ):
         """Test that Cohere reranker is created with correct parameters."""
         query = "What is ROS?"
-        document_type = "documento-pdf"
+        document_title = "ros-intro"
 
         # Mock components
         mock_cohere_rerank.return_value = MagicMock()
@@ -123,13 +124,31 @@ class TestRerankService(unittest.TestCase):
         mock_runnable_parallel.return_value = mock_setup
 
         # Act
-        self.service.answer_question(query, document_type)
+        self.service.answer_question(query, document_title=document_title)
 
         # Assert
         mock_cohere_rerank.assert_called_once()
         call_kwargs = mock_cohere_rerank.call_args[1]
         self.assertEqual(call_kwargs["top_n"], self.settings.default_rerank_top_n)
         self.assertEqual(call_kwargs["model"], self.settings.cohere_model)
+
+    @patch("app.services.rag.rerank_service.StrOutputParser")
+    @patch("app.services.rag.rerank_service.RunnableParallel")
+    @patch("app.services.rag.rerank_service.ChatPromptTemplate.from_template")
+    @patch("app.services.rag.rerank_service.ContextualCompressionRetriever")
+    @patch("app.services.rag.rerank_service.CohereRerank")
+    def test_answer_question_scopes_retriever_to_document(self, *_mocks):
+        for metadata_filter in (None, {"pagina": 1}):
+            with self.subTest(metadata_filter=metadata_filter):
+                self.mock_vdb_repo.as_retriever.reset_mock()
+
+                self.service.answer_question(
+                    "q", document_title="doc-a", metadata_filter=metadata_filter
+                )
+
+                kwargs = self.mock_vdb_repo.as_retriever.call_args.kwargs["search_kwargs"]
+                self.assertEqual(kwargs["filter"], build_document_filter("doc-a", metadata_filter))
+                self.assertEqual(kwargs["where_document"], {"$contains": " "})
 
 
 if __name__ == "__main__":

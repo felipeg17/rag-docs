@@ -185,7 +185,9 @@ class TestProcessDocumentController(unittest.TestCase):
             )
             search_results.append((doc, result_data["score"]))
 
-        self.mock_vdb_repository.similarity_search_with_score.return_value = search_results
+        self.mock_vdb_repository.similarity_search_with_relevance_scores.return_value = (
+            search_results
+        )
         self.mock_vdb_repository.check_document_exists.return_value = True
 
         document_id = "test-document"
@@ -274,6 +276,44 @@ class TestProcessDocumentController(unittest.TestCase):
 
         # Verify interaction logging was called
         self.mock_interaction_service.log_qa.assert_called_once()
+
+    def test_ask_passes_document_scope_to_service(self):
+        self.mock_vdb_repository.check_document_exists.return_value = True
+        self.mock_qa_service.answer_question.return_value = {"result": "a", "source_documents": []}
+        self.mock_rerank_service.answer_question.return_value = "a"
+        services = {
+            "standard": self.mock_qa_service,
+            "rerank": self.mock_rerank_service,
+        }
+
+        for strategy, service in services.items():
+            with self.subTest(strategy=strategy):
+                payload = {
+                    "question": "q",
+                    "strategy": strategy,
+                    "k_results": 4,
+                    "metadata_filter": {"pagina": 1},
+                }
+
+                response = self.client.post("/api/v1/documents/doc-a/ask", json=payload)
+
+                self.assertEqual(response.status_code, 200)
+                kwargs = service.answer_question.call_args.kwargs
+                self.assertEqual(kwargs["document_title"], "doc-a")
+                self.assertEqual(kwargs["metadata_filter"], {"pagina": 1})
+                self.assertNotIn("document_type", kwargs)
+
+    def test_search_scopes_filter_to_document(self):
+        self.mock_vdb_repository.check_document_exists.return_value = True
+        self.mock_vdb_repository.similarity_search_with_relevance_scores.return_value = []
+        payload = {"query": "q", "k_results": 4, "metadata_filter": {}}
+
+        response = self.client.post("/api/v1/documents/doc-a/search", json=payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.mock_vdb_repository.similarity_search_with_relevance_scores.assert_called_once_with(
+            query="q", k=4, metadata_filter={"titulo": {"$eq": "doc-a"}}
+        )
 
     def test_qa_endpoint_service_error_returns_500(self):
         # Arrange

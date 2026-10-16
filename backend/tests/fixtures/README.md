@@ -20,7 +20,7 @@ Instead of calling real APIs during unit tests, we:
 - `rerank_qa_complete_response.json` - Complete rerank QA (reranked docs + LLM answer)
 - `sample_pdf_base64.json` - Base64-encoded ros-intro.pdf for testing
 
-**Note:** ChromaDB search scores may vary slightly (third decimal) due to floating-point precision in cosine similarity calculations. Tests should use tolerance when comparing scores.
+**Note:** ChromaDB search scores may vary slightly (third decimal) due to floating-point precision. The `score` values in these files are raw store distances (`similarity_search_with_score`), not the cosine similarity `/search` now returns. Tests should use tolerance when comparing scores.
 
 ## Generating Golden Responses
 
