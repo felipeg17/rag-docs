@@ -69,4 +69,5 @@ skaffold dev --profile local,ollama -f skaffold.yaml
 - `docs/development/testing.md` — test structure, CI/CD
 - `docs/development/contributing.md` — branching, code style, PR process
 - `docs/findings/` — tracked defects/improvements (one file per finding, `F-NNN`)
+- `docs/specs/` — specs (`SPEC-NNN`); product changes follow the `/spec` pipeline (see `.claude/CLAUDE.md`)
 - `k8s/README.md` — minikube cluster setup and Skaffold profiles

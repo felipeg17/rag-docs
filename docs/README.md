@@ -6,5 +6,6 @@
 | [reference/](reference/) | How the system is built | [architecture.md](reference/architecture.md) — services, DB schema, LLM providers, DI flow |
 | [development/](development/) | Working on the codebase | [contributing.md](development/contributing.md) — branching, code style, PRs · [testing.md](development/testing.md) — test structure, CI/CD |
 | [findings/](findings/) | Tracked defects and improvements | [README.md](findings/README.md) — index, workflow, audit history |
+| [specs/](specs/) | Spec-driven changes | [README.md](specs/README.md) — lifecycle, domain agents, index · [TEMPLATE.md](specs/TEMPLATE.md) |
 
 New documents go in the folder that matches their purpose; add them to this table.
