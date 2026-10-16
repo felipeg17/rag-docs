@@ -156,7 +156,7 @@ search_interactions (
   query_text TEXT NOT NULL,
   k_results INT,
   results_count INT,
-  avg_similarity_score FLOAT,
+  avg_similarity_score FLOAT,  -- mean /search score (cosine similarity, 0-1); rows before SPEC-001 hold mean distances, not backfilled
   execution_time_ms INT,
   session_id UUID,
   user_id VARCHAR(255),
@@ -186,8 +186,16 @@ qa_interactions (
 
 ### Vector Database Storage
 
-- ChromaDB collections: Organized by document title as metadata filter
-- PGVector: `vector` schema with embeddings and metadata (managed by LangChain)
+- ChromaDB: one collection (`chromadb_collection`, default `rag-docs`); each chunk carries `titulo` (document title) and `tipo_documento` metadata
+- PGVector: `vector` schema, `rag_documents` table with `titulo` and `tipo_documento` metadata columns (managed by LangChain)
+- Retrieval is scoped by `titulo` only (see [API Endpoints](#api-endpoints)). `tipo_documento` is written at ingestion but not read by retrieval.
+
+Both backends measure similarity with cosine distance, set in code (not configurable):
+
+- ChromaDB: the collection is created with `{"hnsw:space": "cosine"}` by `ChromaDBClient.get_or_create_collection`, `Chroma(collection_metadata=...)` and `admin_chroma.py`
+- PGVector: `PGVectorStore.create_sync(distance_strategy=DistanceStrategy.COSINE_DISTANCE)`, the library default, passed explicitly
+
+An existing ChromaDB collection with another space (`l2` is Chroma's default when none is given) is refused: `get_or_create_collection` raises `RuntimeError` naming the collection and its space. This happens when the vector repository is built, not at startup; the failed build is not cached, so every request that needs the repository (ingestion included) fails until the collection is recreated. The backend never deletes or modifies the collection. Chroma cannot change a collection's space, so drop the collection and re-ingest the PDFs (`POST /api/v1/documents` re-ingests a PDF whose title is missing from the vector store).
 
 ## API Endpoints
 
@@ -199,6 +207,19 @@ qa_interactions (
 | POST   | `/api/v1/documents/{document_id}/ask`    | Question answering |
 
 `{document_id}` is the document title (not UUID), used for vector database filtering.
+
+### Retrieval scope
+
+`/search` and `/ask` (both strategies) retrieve only chunks whose `titulo` equals `{document_id}`. The filter comes from `build_document_filter` in `app/infrastructure/vector_db/filters.py` and has one shape, valid on both backends:
+
+- `metadata_filter` empty or absent: `{"titulo": {"$eq": <title>}}`
+- Otherwise: `{"$and": [<title clause>, <one clause per metadata_filter key>]}`. The client filter is AND-ed with the title, so it can only narrow the scope. It is passed through without validation; some operators exist on one backend only.
+
+`document_type` (ingestion request) is stored as `tipo_documento` chunk metadata and `documents.document_type`, but retrieval does not filter on it unless the client's `metadata_filter` names it.
+
+### Search score
+
+`/search` returns each result's `score` as a cosine similarity in [0, 1], higher is better: `1 − cosine distance`, clamped to [0, 1] (`cosine_distance_to_similarity` in `app/infrastructure/vector_db/scoring.py`, applied by each repository's own `similarity_search_with_relevance_scores` wrapper, not LangChain's method of the same name). Results are in non-increasing `score` order. `/ask` `source_documents` carry no score.
 
 ## Configuration Management
 

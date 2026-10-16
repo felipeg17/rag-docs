@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from langchain.schema import Document
 
 from app.core.config import Settings
+from app.infrastructure.vector_db.filters import build_document_filter
 from app.services.rag.qa_service import QAService
 
 from ..document.pdf_loader_test import FIXTURES_PATH
@@ -58,7 +59,7 @@ class TestQAService(unittest.TestCase):
         """Test QA service returns expected answer using golden response data."""
         # Arrange - Use golden response data
         query = self.golden_response["input"]["query"]
-        document_type = "documento-pdf"
+        document_title = "ros-intro"
 
         # Convert golden response source documents to Langchain Documents
         source_docs = []
@@ -84,7 +85,7 @@ class TestQAService(unittest.TestCase):
         mock_prompt_template.return_value = mock_prompt
 
         # Act
-        result = self.service.answer_question(query, document_type)
+        result = self.service.answer_question(query, document_title=document_title)
 
         # Assert - Verify result structure and content
         self.assertIsInstance(result, dict)
@@ -109,16 +110,16 @@ class TestQAService(unittest.TestCase):
         """Test that answer includes source documents with metadata."""
         # Arrange
         query = "What is ROS?"
-        document_type = "documento-pdf"
+        document_title = "ros-intro"
 
         # Create mock source documents with metadata
         mock_doc1 = Document(
             page_content="ROS is a robotics framework",
-            metadata={"titulo": "ros-intro", "pagina": 0, "tipo-documento": document_type},
+            metadata={"titulo": "ros-intro", "pagina": 0, "tipo-documento": "documento-pdf"},
         )
         mock_doc2 = Document(
             page_content="ROS provides tools for robotics",
-            metadata={"titulo": "ros-intro", "pagina": 1, "tipo-documento": document_type},
+            metadata={"titulo": "ros-intro", "pagina": 1, "tipo-documento": "documento-pdf"},
         )
 
         mock_qa_chain = MagicMock()
@@ -129,7 +130,7 @@ class TestQAService(unittest.TestCase):
         mock_retrieval_qa.return_value = mock_qa_chain
 
         # Act
-        result = self.service.answer_question(query, document_type)
+        result = self.service.answer_question(query, document_title=document_title)
 
         # Assert
         self.assertIn("source_documents", result)
@@ -141,6 +142,25 @@ class TestQAService(unittest.TestCase):
             self.assertIn("titulo", doc.metadata)
             self.assertIn("pagina", doc.metadata)
             self.assertIn("tipo-documento", doc.metadata)
+
+    @patch("app.services.rag.qa_service.RetrievalQA.from_chain_type")
+    @patch("app.services.rag.qa_service.PromptTemplate.from_template")
+    def test_answer_question_scopes_retriever_to_document(self, _prompt, mock_retrieval_qa):
+        mock_retrieval_qa.return_value.invoke.return_value = {
+            "result": "a",
+            "source_documents": [],
+        }
+        for metadata_filter in (None, {"pagina": 1}):
+            with self.subTest(metadata_filter=metadata_filter):
+                self.mock_vdb_repo.as_retriever.reset_mock()
+
+                self.service.answer_question(
+                    "q", document_title="doc-a", metadata_filter=metadata_filter
+                )
+
+                kwargs = self.mock_vdb_repo.as_retriever.call_args.kwargs["search_kwargs"]
+                self.assertEqual(kwargs["filter"], build_document_filter("doc-a", metadata_filter))
+                self.assertEqual(kwargs["where_document"], {"$contains": " "})
 
 
 if __name__ == "__main__":

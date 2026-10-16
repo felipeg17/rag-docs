@@ -45,6 +45,7 @@ class TestVectorDBRepository(unittest.TestCase):
             collection_name="test-collection",
             embedding_function=self.mock_embeddings,
             client=self.mock_chroma_http_client,
+            collection_metadata={"hnsw:space": "cosine"},
         )
         self.assertIsNotNone(repo.vdb)
 
@@ -103,6 +104,26 @@ class TestVectorDBRepository(unittest.TestCase):
             where_document={"$contains": " "},
         )
         self.assertEqual(results, expected_results)
+
+    @patch("app.infrastructure.vector_db.repository.Chroma")
+    def test_similarity_search_forwards_supplied_filter(self, mock_chroma):
+        mock_chroma_instance = MagicMock()
+        mock_chroma.return_value = mock_chroma_instance
+        repo = VectorDBRepository(
+            self.settings,
+            self.mock_chroma_client,
+            self.mock_embeddings_client,
+        )
+        scoped = {"titulo": {"$eq": "doc-a"}}
+
+        repo.similarity_search_with_score(query="q", k=2, metadata_filter=scoped)
+
+        mock_chroma_instance.similarity_search_with_score.assert_called_once_with(
+            query="q",
+            k=2,
+            filter=scoped,
+            where_document={"$contains": " "},
+        )
 
     @patch("app.infrastructure.vector_db.repository.Chroma")
     def test_check_document_exists_true(self, mock_chroma):
@@ -169,6 +190,27 @@ class TestVectorDBRepository(unittest.TestCase):
             search_kwargs={"k": 4},
         )
         self.assertEqual(retriever, mock_retriever)
+
+    @patch("app.infrastructure.vector_db.repository.Chroma")
+    def test_relevance_scores_convert_distance_to_similarity(self, mock_chroma):
+        store = mock_chroma.return_value
+        docs = [Document(page_content="a", metadata={}), Document(page_content="b", metadata={})]
+        store.similarity_search_with_score.return_value = [(docs[0], 0.3), (docs[1], 1.708)]
+        repo = VectorDBRepository(
+            self.settings, self.mock_chroma_client, self.mock_embeddings_client
+        )
+        scoped = {"titulo": {"$eq": "doc-a"}}
+
+        results = repo.similarity_search_with_relevance_scores(
+            query="q", k=2, metadata_filter=scoped
+        )
+
+        self.assertEqual([d for d, _ in results], docs)
+        self.assertAlmostEqual(results[0][1], 0.7)
+        self.assertAlmostEqual(results[1][1], 0.0)
+        store.similarity_search_with_score.assert_called_once_with(
+            query="q", k=2, filter=scoped, where_document={"$contains": " "}
+        )
 
 
 if __name__ == "__main__":

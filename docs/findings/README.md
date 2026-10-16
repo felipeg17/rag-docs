@@ -19,7 +19,7 @@ Tracked improvement opportunities and defects. Each finding is one file so it ca
 
 | ID | Title | Severity | Category | Status | Issue |
 |---|---|---|---|---|---|
-| [F-001](F-001-retrieval-not-scoped-to-document.md) | Retrieval is not scoped to the requested document | High | correctness | Open | — |
+| [F-001](F-001-retrieval-not-scoped-to-document.md) | Retrieval is not scoped to the requested document | High | correctness | Fixed (SPEC-001) | — |
 | [F-002](F-002-inconsistent-document-identity.md) | Postgres and vector DB deduplicate on different keys | High | correctness | Open | #20 |
 | [F-003](F-003-blocking-calls-in-async-endpoints.md) | Async endpoints perform blocking I/O | High | performance | Open | #19 (related) |
 | [F-004](F-004-rerank-context-not-formatted.md) | Rerank chain injects raw `list[Document]` into the prompt | High | rag-quality | Open | — |
@@ -49,6 +49,8 @@ Tracked improvement opportunities and defects. Each finding is one file so it ca
 | [F-028](F-028-frontend-requests.md) | Frontend HTTP calls: no URL encoding, timeout or error handling | Low | frontend | Open | — |
 | [F-029](F-029-frontend-ux-security.md) | Frontend UX and security settings | Low | frontend | Open | — |
 | [F-030](F-030-misnamed-init-file.md) | `__initi__.py` typo in repositories package | Low | maintenance | Open | — |
+| [F-031](F-031-search-score-is-unbounded-distance.md) | `/search` score is a distance but the model requires similarity in [0, 1] (500s) | Medium | correctness | Fixed (SPEC-001) | — |
+| [F-032](F-032-pdb-breakpoints-in-admin-chroma.md) | Leftover `pdb` breakpoints in `backend/admin_chroma.py` | Low | maintenance | Open | — |
 
 ## Audits
 

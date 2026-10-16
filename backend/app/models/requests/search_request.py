@@ -6,7 +6,9 @@ from pydantic import BaseModel, Field
 class DocumentSearchRequest(BaseModel):
     query: str = Field(..., description="Search query")
     k_results: int = Field(default=4, ge=1, le=10, description="Number of results")
-    metadata_filter: dict = Field(default={}, description="Optional metadata filters")
+    metadata_filter: dict = Field(
+        default={}, description="Optional metadata filters, AND-ed with the document scope"
+    )
 
 
 class QuestionRequest(BaseModel):
@@ -15,4 +17,6 @@ class QuestionRequest(BaseModel):
         default="standard", description="QA strategy: 'standard' or 'rerank'"
     )
     k_results: int = Field(default=4, ge=1, le=10, description="Number of chunks to retrieve")
-    metadata_filter: dict = Field(default={}, description="Optional metadata filters")
+    metadata_filter: dict = Field(
+        default={}, description="Optional metadata filters, AND-ed with the document scope"
+    )
