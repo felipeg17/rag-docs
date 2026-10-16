@@ -62,4 +62,4 @@ agents: orchestration lives in the `/spec` skill.
 
 | ID | Title | Status | Findings | Branch |
 |---|---|---|---|---|
-| [SPEC-001](SPEC-001-scope-retrieval-to-document.md) | Scope retrieval to the requested document | Draft | F-001 | `spec/SPEC-001-scope-retrieval-to-document` |
+| [SPEC-001](SPEC-001-scope-retrieval-to-document.md) | Scope retrieval to the requested document and return true similarity scores | Done | F-001, F-031 | `spec/SPEC-001-scope-retrieval-to-document` |
