@@ -41,8 +41,8 @@ Verified on `dev` @ `200c4cf` (2026-10-15):
 |---|---|---|---|
 | `langchain-core` | 0.3.68 | `VectorStoreRetriever._get_relevant_documents` calls `vectorstore.similarity_search(query, **search_kwargs)`, so `search_kwargs["filter"]` reaches the store | `langchain_core/vectorstores/base.py:1074-1079` |
 | `langchain-chroma` | 0.2.4 | `filter` is passed to Chroma as `where=`, `where_document` as `where_document=` | `langchain_chroma/vectorstores.py:585-606,686-700` |
-| `chromadb` | 1.0.12 | `validate_where` requires exactly one top-level key. It rejects multi-key dicts (`{"a":1,"b":2}`), `{}`, and `$and`/`$or` with fewer than 2 elements. Nested `$and`/`$or` is accepted. | `chromadb/api/types.py:731-763` + executed |
-| `langchain-postgres` | 0.0.16 | `PGVectorStore` (v2) accepts `$and`/`$or`/`$not`, multi-key dicts (implicit AND) and single-element `$and`. A field name is emitted raw as a SQL column, so it must be a valid identifier (`tipo-documento` raises `ValueError`); a non-column key yields a SQL error. An empty or absent filter means no `WHERE`. | `langchain_postgres/v2/async_vectorstore.py:606-618,1041-1240` + executed |
+| `chromadb` | 1.0.12 | `validate_where` requires exactly one top-level key. It rejects multi-key dicts (`{"a":1,"b":2}`), `{}`, and `$and`/`$or` with fewer than 2 elements. Nested `$and`/`$or` is accepted. Logical operators are `$and`/`$or` only (`$not` is rejected). Field operators are `$eq $ne $gt $gte $lt $lte $in $nin` only (`$like`, `$exists` are rejected). | `chromadb/api/types.py:731-763` + executed |
+| `langchain-postgres` | 0.0.16 | `PGVectorStore` (v2) accepts `$and`/`$or`/`$not`, multi-key dicts (implicit AND) and single-element `$and`. A field name is emitted raw as a SQL column, so it must be a valid identifier (`tipo-documento` raises `ValueError`, executed). A non-column key yields a SQL error (inferred from the SQL it emits; not executed, no database). An empty or absent filter means no `WHERE`. | `langchain_postgres/v2/async_vectorstore.py:606-618,1041-1240` + executed |
 | `langchain-postgres` | 0.0.16 | `where_document` is not referenced anywhere in the package. It falls into `**kwargs` and is silently ignored. | `grep -rn where_document langchain_postgres/` → no match |
 
 "Executed" means the filter shapes were run through `chromadb.api.types.validate_where` and
@@ -93,7 +93,8 @@ backends:
 - **REQ-4**: The `tipo_documento` condition currently applied (`"documento-pdf"`) shall remain part
   of the scope (pending OQ-1).
 - **REQ-5**: REQ-1 to REQ-3 shall hold for both vector backends (`VECTOR_DB_TYPE` Chroma and
-  PGVector), using one filter that is valid in both grammars.
+  PGVector). The document-scope filter shall use one shape that is valid in both grammars.
+  Client-supplied clauses are passed through as given (see OQ-2).
 - **REQ-6**: The `where_document` behavior of each backend shall not change.
 
 ## Contracts
@@ -125,15 +126,19 @@ def build_document_filter(
 1. Clauses start as `[{"titulo": {"$eq": document_title}}]`. If `document_type` is given, append
    `{"tipo_documento": {"$eq": document_type}}`.
 2. If `metadata_filter` is non-empty:
-   - a dict with one key (a field or `$and`/`$or`/`$not`) is appended as one clause;
+   - a dict with one key (a field, `$and` or `$or`) is appended as one clause;
    - a dict with several field keys is split into one clause per key. Chroma rejects multi-key
      dicts; PGVector treats them as AND, so splitting keeps the meaning on both.
 3. Return the single clause itself when there is one, or `{"$and": clauses}` when there are two or
    more. Chroma rejects a one-element `$and`.
 
 The title clause is always a top-level conjunct, so no client filter can widen the scope. A client
-filter of `{"titulo": "other"}` yields an empty result. The output shape is valid on both backends
-(verified above), so the repositories need no backend-specific translation.
+filter of `{"titulo": "other"}` yields an empty result.
+
+The clauses the builder itself emits, and its `$and` wrapper, are valid on both backends (verified
+above), so the repositories need no backend-specific translation. Client-supplied operators pass
+through unchanged. Some exist on only one backend (`$not`, `$like`, `$ilike`, `$between`, `$exists`
+are PGVector-only), so a client filter using them fails on Chroma. That is OQ-2's territory.
 
 **Services.**
 - `QAService.answer_question` and `RerankService.answer_question` gain keyword-only
@@ -178,8 +183,8 @@ filter of `{"titulo": "other"}` yields an empty result. The output shape is vali
 | AC-6 | When `POST /api/v1/documents/doc-a/ask` is called with `strategy` `standard`, and again with `rerank`, and `metadata_filter={"pagina": 1}`, the called service receives `document_title="doc-a"` and `metadata_filter={"pagina": 1}`. | `backend/tests/unit/api/document_router_test.py` |
 | AC-7 | When `POST /api/v1/documents/doc-a/search` is called with `metadata_filter={}`, `similarity_search_with_score` receives a `metadata_filter` equal to `build_document_filter("doc-a", "documento-pdf", {})`. | `backend/tests/unit/api/document_router_test.py` |
 | AC-8 | Given a caller-supplied non-`None` filter, both `VectorDBRepository` and `PGVectorDBRepository` `similarity_search_with_score` forward it unchanged as `filter=`. With `None`, both use `{"tipo_documento": "documento-pdf"}`. | `backend/tests/unit/infrastructure/vector_db_repository_test.py`, `backend/tests/unit/infrastructure/pgvector_repository_test.py` (new) |
-| AC-9 | Given a deployed stack with two distinct PDFs ingested under different titles, when `/search` is called on one title, then at least one result is returned and every result has `metadata.titulo` equal to that title. | `behave backend/tests/behave/document_scoping.feature` (deployed stack) |
-| AC-10 | Given the same two documents, when `/ask` (`strategy=standard`) is called on one title, then every `source_documents[].metadata.titulo` equals that title. | `behave backend/tests/behave/document_scoping.feature` (deployed stack; live LLM) |
+| AC-9 | Given a deployed stack with two content-distinct PDFs A and B ingested under different titles, when `/search` is called on A with a query about content that exists only in B, then every result has `metadata.titulo` equal to A's title. Unscoped retrieval would surface B's chunks, so this scenario fails on `dev` @ `200c4cf`. A second query about A's content returns at least one result. | `behave backend/tests/behave/document_scoping.feature` (deployed stack) |
+| AC-10 | Given the same two documents, when `/ask` (`strategy=standard`) is called on A with a question about content that exists only in B, then every `source_documents[].metadata.titulo` equals A's title. | `behave backend/tests/behave/document_scoping.feature` (deployed stack; live LLM) |
 | AC-11 | Gates show no new errors beyond the baseline in `.claude/CLAUDE.md`. | `cd backend && uv run pytest tests/unit` → all pass (≥ 130 + new); `uv run ruff check app tests` → only the two baseline errors; `uv run ruff format --check app` and `uv run mypy app` → clean |
 
 ## Tasks
@@ -187,8 +192,12 @@ filter of `{"titulo": "other"}` yields an empty result. The output shape is vali
 | ID | Task | Agent | Depends on | Files | Status |
 |---|---|---|---|---|---|
 | T-1 | Add `build_document_filter`. Use it in `QAService`, `RerankService` and the `/search` + `/ask` handlers. Pass `document_title`/`metadata_filter` through. Replace `or` with an `is None` default in both repositories. Update the `metadata_filter` `Field` descriptions. Add or adjust unit tests for AC-1 to AC-8. | backend-agent | — | `backend/app/infrastructure/vector_db/filters.py` (new), `backend/app/infrastructure/vector_db/repository.py`, `backend/app/infrastructure/vector_db/pgvector_repository.py`, `backend/app/services/rag/qa_service.py`, `backend/app/services/rag/rerank_service.py`, `backend/app/api/routers/v1/document.py`, `backend/app/models/requests/search_request.py`, `backend/tests/unit/infrastructure/vector_db_filters_test.py` (new), `backend/tests/unit/infrastructure/pgvector_repository_test.py` (new), `backend/tests/unit/infrastructure/vector_db_repository_test.py`, `backend/tests/unit/services/rag/qa_service_test.py`, `backend/tests/unit/services/rag/rerank_service_test.py`, `backend/tests/unit/api/document_router_test.py` | Todo |
-| T-2 | Add a behave feature for AC-9 and AC-10 with a second, content-distinct PDF fixture. Only `ros-intro.pdf` exists today. Do not reuse the same PDF under a second title: that path depends on F-002's dedup behavior. | qa-agent | T-1 | `backend/tests/behave/document_scoping.feature` (new), `backend/tests/behave/steps/document_scoping_steps.py` (new), `backend/tests/behave/data/<second>.pdf` (new) | Todo |
+| T-2 | Add a behave feature for AC-9 and AC-10 with a second, content-distinct PDF fixture. Use queries that target content only in the *other* document, so the scenario fails without the fix. Only `ros-intro.pdf` exists today. Do not reuse the same PDF under a second title: that path depends on F-002's dedup behavior. | qa-agent | T-1 | `backend/tests/behave/document_scoping.feature` (new), `backend/tests/behave/steps/document_scoping_steps.py` (new), `backend/tests/behave/data/<second>.pdf` (new) | Todo |
 | T-3 | Update `docs/reference/architecture.md` (§ Vector Database Storage, § API Endpoints) to state that retrieval is scoped by `titulo` and that `metadata_filter` is AND-ed with it. | architect | T-1 | `docs/reference/architecture.md` | Todo |
+
+Backend coverage: AC-9 and AC-10 run against whichever vector backend the deployed stack uses
+(Chroma under the `local` profile). PGVector is covered at unit level by AC-1 (filter grammar) and
+AC-8 (repository pass-through) only.
 
 No frontend, k8s or ci task: no API schema, setting, manifest or workflow changes. `docs/guides/`
 and `docs/development/` do not describe `metadata_filter` or retrieval filtering (checked with
@@ -213,12 +222,14 @@ and `docs/development/` do not describe `metadata_filter` or retrieval filtering
     `pgvector_client.py:13-18`) or not an identifier raises inside the store. That surfaces as a 500
     (`document.py:170-178,259-267`). Chroma's behavior for an unknown key was not verified
     (assumed: no match, empty result).
+  - Operators that exist on only one backend fail on the other: Chroma rejects `$not`, `$like`,
+    `$ilike`, `$between` and `$exists` (verified).
   - This already happens on `/search`. Honoring the filter on `/ask` (REQ-3) newly exposes it there.
   - Options:
     - **(a)** pass the filter through and accept the 500 until F-007;
-    - **(b)** validate in the request models (recursive walk; allow only those 4 field keys plus
-      `$and`/`$or`/`$not` and the operators both backends support). This returns 422, which adds a
-      status-code contract and AC.
+    - **(b)** validate in the request models (recursive walk; allow only those 4 field keys,
+      `$and`/`$or`, and the field operators both backends support: `$eq $ne $gt $gte $lt $lte $in $nin`).
+      This returns 422, which adds a status-code contract and AC.
     - **(c)** keep ignoring `metadata_filter` on `/ask`. This drops the second half of REQ-3.
   - **Recommendation: (a)**, to keep this spec to F-001. All in-repo callers send `{}`.
 - [ ] **OQ-3: Ship title scoping now, or wait for F-002 (#20) to settle the document identity?**
