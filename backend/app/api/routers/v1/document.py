@@ -13,6 +13,7 @@ from app.core.dependencies import (
     RerankServiceDep,
     VectorDBDep,
 )
+from app.infrastructure.vector_db.filters import build_document_filter
 from app.models.requests.document_request import DocumentIngestRequest
 from app.models.requests.search_request import DocumentSearchRequest, QuestionRequest
 from app.models.responses.document_response import DocumentIngestResponse
@@ -131,10 +132,10 @@ async def search_document(
 
         # Perform similarity search
         start_time = time.time()
-        vdb_results = vdb_repo.similarity_search_with_score(
+        vdb_results = vdb_repo.similarity_search_with_relevance_scores(
             query=request.query,
             k=request.k_results,
-            metadata_filter=request.metadata_filter,
+            metadata_filter=build_document_filter(document_id, request.metadata_filter),
         )
         execution_time_ms = int((time.time() - start_time) * 1000)
 
@@ -210,7 +211,8 @@ async def ask_question(
             # Rerank strategy - returns only the answer
             answer = rerank_service.answer_question(
                 query=request.question,
-                document_type="documento-pdf",  # TODO issue #15: remove the hardcoded value
+                document_title=document_id,
+                metadata_filter=request.metadata_filter,
                 k_results=request.k_results,
             )
             source_docs = []
@@ -219,7 +221,8 @@ async def ask_question(
             # Standard strategy - returns answer + sources
             qa_result = qa_service.answer_question(
                 query=request.question,
-                document_type="documento-pdf",  # TODO issue #15: remove the hardcoded value
+                document_title=document_id,
+                metadata_filter=request.metadata_filter,
                 k_results=request.k_results,
             )
             answer = qa_result.get("result", "")

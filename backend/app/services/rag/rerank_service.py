@@ -8,6 +8,7 @@ from pydantic import SecretStr
 
 from app.core.config import Settings
 from app.infrastructure.llm.client import LLMClient
+from app.infrastructure.vector_db.filters import build_document_filter
 from app.infrastructure.vector_db.repository import VectorDBRepository
 from app.utils.load_prompt import load_prompt
 from app.utils.logger import logger
@@ -33,7 +34,9 @@ class RerankService:
     def answer_question(
         self,
         query: str,
-        document_type: str,
+        *,
+        document_title: str,
+        metadata_filter: dict | None = None,
         k_results: int | None = None,
         rerank_top_n: int | None = None,
         custom_prompt: str | None = None,
@@ -43,7 +46,8 @@ class RerankService:
 
         Args:
             query: User question
-            document_type: Filter documents by type (e.g., "documento-pdf")
+            document_title: Title of the document to scope retrieval to
+            metadata_filter: Optional extra filter, AND-ed with the document scope
             k_results: Number of chunks to retrieve (uses default if None)
             rerank_top_n: Number of top chunks after reranking (uses default if None)
             custom_prompt: Optional custom prompt template
@@ -57,7 +61,7 @@ class RerankService:
         prompt_text = custom_prompt or self.DEFAULT_PROMPT
 
         logger.info(
-            f"Rerank QA query: '{query[:50]}...' | doc_type={document_type} | "
+            f"Rerank QA query: '{query[:50]}...' | doc_title={document_title} | "
             f"k={k_results} | rerank_top_n={rerank_top_n}"
         )
 
@@ -66,7 +70,7 @@ class RerankService:
             search_type="similarity",
             search_kwargs={
                 "k": k_results,
-                "filter": {"tipo_documento": {"$eq": document_type}},
+                "filter": build_document_filter(document_title, metadata_filter),
                 "where_document": {"$contains": " "},
             },
         )

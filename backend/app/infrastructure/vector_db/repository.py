@@ -3,7 +3,8 @@ from langchain_chroma import Chroma
 
 from app.core.config import Settings
 from app.infrastructure.embeddings.client import EmbeddingsClient
-from app.infrastructure.vector_db.chroma_client import ChromaDBClient
+from app.infrastructure.vector_db.chroma_client import COLLECTION_METADATA, ChromaDBClient
+from app.infrastructure.vector_db.scoring import cosine_distance_to_similarity
 from app.utils.logger import logger
 
 
@@ -28,6 +29,7 @@ class VectorDBRepository:
             collection_name=self._settings.chromadb_collection,
             embedding_function=self._embeddings,
             client=self._chroma_http_client,
+            collection_metadata=COLLECTION_METADATA,
         )
         logger.info(
             f"VectorDB repository initialized with collection "
@@ -50,8 +52,8 @@ class VectorDBRepository:
         where_document: dict | None = None,
     ) -> list[tuple[Document, float]]:
         """Perform similarity search with scores."""
-        # * Standard filter by document type
-        filter = metadata_filter or {"tipo_documento": "documento-pdf"}
+        # * Caller-supplied filter is never replaced; default only when None
+        filter = {"tipo_documento": "documento-pdf"} if metadata_filter is None else metadata_filter
         # * Search for documents that at least have one space in their content
         # TODO: Check how to avoid this default
         where_document = where_document or {"$contains": " "}
@@ -62,6 +64,24 @@ class VectorDBRepository:
             filter=filter,
             where_document=where_document,
         )
+
+    def similarity_search_with_relevance_scores(
+        self,
+        query: str,
+        k: int | None = None,
+        metadata_filter: dict | None = None,
+        where_document: dict | None = None,
+    ) -> list[tuple[Document, float]]:
+        """Similarity search with scores as cosine similarity in [0, 1] (higher is better)."""
+        return [
+            (doc, cosine_distance_to_similarity(distance))
+            for doc, distance in self.similarity_search_with_score(
+                query=query,
+                k=k,
+                metadata_filter=metadata_filter,
+                where_document=where_document,
+            )
+        ]
 
     def as_retriever(self, search_type: str = "similarity", search_kwargs: dict | None = None):
         """Get retriever for RAG chains."""

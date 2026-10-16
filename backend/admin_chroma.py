@@ -61,6 +61,8 @@ chroma_client = chromadb.HttpClient(
 
 
 # Crear coleccion
-collection = chroma_client.create_collection(name=collection_name)
+collection = chroma_client.create_collection(
+    name=collection_name, metadata={"hnsw:space": "cosine"}
+)
 logging.info(f"Collections: {chroma_client.list_collections()}")
 pdb.set_trace()
