@@ -30,6 +30,12 @@ Spec protocol:
   never `git add -A`). Message: `<type>(SPEC-NNN T-N): <summary>`. Report the
   commit SHA.
 
+Code navigation: use `codegraph_explore` (CodeGraph MCP) before reading or
+editing any symbol. One call returns its current source plus callers and blast
+radius; check the blast radius before changing a signature, a `Depends`
+provider or a model. Use grep/Read only for non-code files (YAML, prompts,
+migrations' SQL, fixtures).
+
 Architecture (keep it):
 
 - Layers: `api/routers/*` (HTTP only: parse, call services, map errors) →

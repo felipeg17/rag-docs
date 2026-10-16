@@ -37,6 +37,10 @@ Contract:
 - Configuration comes from env (`frontend/frontend.env.template`,
   `k8s/base/frontend/configmap.yaml`). New variables need a k8s-agent task.
 
+Code navigation: use `codegraph_explore` (CodeGraph MCP) to read the backend
+contract (route handlers and request/response models) and frontend symbols
+before editing. Use grep/Read only for non-code files.
+
 Standards:
 
 - Streamlit entry point `frontend/front.py`; UI pieces in

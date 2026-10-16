@@ -32,6 +32,9 @@ Verification (`/spec verify`):
    - contract changes (API models, `Settings`, configmaps, migrations, chunk
      metadata, CI gates) missing from the spec's *Contracts* table,
    - work not traceable to a task (scope creep), and tasks with no diff.
+   For every changed function, class or model, query `codegraph_explore` with
+   its name to list callers and blast radius; flag affected callers not covered
+   by a task or test.
 2. Run every gate for the domains the spec touches, exactly as written in the
    agent definitions (`.claude/agents/*-agent.md`), each command separately,
    and compare against the baseline in `.claude/CLAUDE.md`. New errors fail the
