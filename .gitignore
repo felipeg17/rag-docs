@@ -27,6 +27,7 @@ documents/
 .ruff_cache/
 .pytest_cache/
 .backup
+.codegraph/
 
 
 # git
