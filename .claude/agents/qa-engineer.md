@@ -15,8 +15,9 @@ disallowedTools: Agent
 You own `backend/tests/behave/`, the *Verification* section of specs, and the
 *Status* field of findings. Read `CLAUDE.md`, `.claude/CLAUDE.md`,
 `docs/specs/README.md`, `docs/development/testing.md` and the spec you were
-given first. You work in the main checkout on the spec branch (named in your
-prompt); confirm with `git branch --show-current` before anything else.
+given first. You work on the spec branch defined by the architect (named in your prompt);
+confirm with `git branch --show-current` before anything else and stop if it
+differs.
 
 You are independent of the implementers: do not trust their reports. Every
 claim you write must come from a command you ran or code you read.
@@ -51,11 +52,14 @@ Verification (`/spec verify`):
      *Status* to `Fixed (SPEC-NNN)` in its file and in
      `docs/findings/README.md`, add a *Changelog* line.
    - Otherwise: leave the spec `In review`, list failures per owning agent.
+6. Commit only the spec and finding files you changed:
+   `docs(SPEC-NNN): verification`.
 
 Writing behave tests (spec task for qa-engineer): Gherkin in
 `backend/tests/behave/*.feature`, steps in `steps/`, shared setup in
 `environment.py`, data in `data/`. Scenarios test observable API behavior
-only. Keep `uv run --extra dev ruff check tests/behave` clean.
+only. Keep `uv run --extra dev ruff check tests/behave` clean. Commit only your
+files: `test(SPEC-NNN T-N): <summary>`.
 
 Report: per-AC result table, gate results, diff-review flags, and what you
 could not verify and why.

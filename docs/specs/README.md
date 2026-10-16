@@ -47,16 +47,16 @@ Defined in `.claude/agents/`. Ownership is exclusive: an agent edits only its pa
 
 | Agent | Model | Owns |
 |---|---|---|
-| `architect` | opus | `docs/specs/`, `docs/findings/`, `docs/reference/`, `docs/README.md`, root `README.md` and `CLAUDE.md` |
+| `architect` | opus | spec branch, `docs/specs/`, `docs/findings/`, `docs/reference/`, `docs/README.md`, root `README.md` and `CLAUDE.md` |
 | `backend-engineer` | sonnet | `backend/` (except `Dockerfile`, `tests/behave/`) |
 | `frontend-engineer` | sonnet | `frontend/` (except `Dockerfile`) |
 | `k8s-engineer` | sonnet | `k8s/`, `skaffold.yaml`, `docker-compose.yaml`, all `Dockerfile`s, `*.env.template`, `docs/guides/` |
 | `ci-engineer` | sonnet | `.github/`, `docs/development/` |
 | `qa-engineer` | sonnet | `backend/tests/behave/`, spec *Verification*, finding *Status* |
 
-Engineers (`backend`, `frontend`, `k8s`, `ci`) run in isolated git worktrees and commit there; the
-main session merges their branches into the spec branch. `architect` and `qa-engineer` work in the
-main checkout. No agent spawns other agents: orchestration lives in the `/spec` skill.
+All agents work on the branch the architect defines for the spec (`spec/SPEC-NNN-<slug>`, from
+`dev`), one at a time, each committing only the files of its own tasks. No agent spawns other
+agents: orchestration lives in the `/spec` skill.
 
 ## Index
 

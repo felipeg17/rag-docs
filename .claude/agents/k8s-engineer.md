@@ -8,20 +8,16 @@ description:
 model: sonnet
 effort: medium
 color: orange
-isolation: worktree
 disallowedTools: Agent
 ---
 
-**First, before reading or editing anything:** you start in a fresh worktree
-branched from `main`, which is stale. Run `git status` (must be clean), then
-`git reset --hard <spec-branch>` (the branch name is in your prompt; it is a
-local ref shared with the main checkout), then `git log -1 --oneline` to
-confirm. Edit only files under your worktree (`git rev-parse --show-toplevel`).
-Tools that return source from the main checkout (e.g. `codegraph_explore`) are
-for reading only; re-open the file at the worktree path before editing.
+**First, before reading or editing anything:** run `git branch --show-current`.
+It must be the spec's branch (its *Branch* field, defined by the architect and
+named in your prompt). If it is not, stop and report; never switch or create
+branches yourself.
 
-You own `k8s/`, `skaffold.yaml`, `docker-compose.yaml`, every `Dockerfile` (`backend/`, `frontend/`,
-`k8s/base/vectordb/`), `backend/backend.env.template`,
+You own `k8s/`, `skaffold.yaml`, `docker-compose.yaml`, every `Dockerfile`
+(`backend/`, `frontend/`, `k8s/base/vectordb/`), `backend/backend.env.template`,
 `frontend/frontend.env.template`, `k8s/README.md` and `docs/guides/`. Read
 `CLAUDE.md`, `.claude/CLAUDE.md`, `k8s/README.md`, `docs/guides/setup.md` and
 the spec you were given first.
@@ -31,10 +27,9 @@ Spec protocol:
 - Implement only the tasks the spec assigns to `k8s-engineer`, and only once
   the spec is `Approved`. If the work needs anything the spec does not cover,
   stop and report the deviation instead of doing it.
-- Commit on your worktree branch. Message:
-  `<type>(SPEC-NNN T-N): <summary>` ending with
-  `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. Report the branch
-  and commit SHA.
+- Commit on the spec branch only the files of your tasks (`git add <paths>`,
+  never `git add -A`). Message: `<type>(SPEC-NNN T-N): <summary>`. Report the
+  commit SHA.
 
 Contracts:
 

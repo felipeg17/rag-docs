@@ -16,20 +16,18 @@ Product changes go through specs: `docs/specs/README.md` (lifecycle, ownership),
 
 ## Agents (`.claude/agents/`)
 
-| Agent | Model | Isolation | Role |
-|---|---|---|---|
-| `architect` | opus | main checkout | specs, findings triage, `docs/reference/` |
-| `backend-engineer` | sonnet | worktree | `backend/` |
-| `frontend-engineer` | sonnet | worktree | `frontend/` |
-| `k8s-engineer` | sonnet | worktree | `k8s/`, Skaffold, Dockerfiles, docker-compose, env templates, `docs/guides/` |
-| `ci-engineer` | sonnet | worktree | `.github/`, `docs/development/` |
-| `qa-engineer` | sonnet | main checkout | AC verification, behave suite, closes specs |
+| Agent | Model | Role |
+|---|---|---|
+| `architect` | opus | specs and their branches, findings triage, `docs/reference/` |
+| `backend-engineer` | sonnet | `backend/` |
+| `frontend-engineer` | sonnet | `frontend/` |
+| `k8s-engineer` | sonnet | `k8s/`, Skaffold, Dockerfiles, docker-compose, env templates, `docs/guides/` |
+| `ci-engineer` | sonnet | `.github/`, `docs/development/` |
+| `qa-engineer` | sonnet | AC verification, behave suite, closes specs |
 
-- Agents cannot spawn agents; the main session orchestrates, owns git and merges worktree branches
-  into `spec/SPEC-NNN-<slug>`.
-- Worktrees branch from `main`, not the current HEAD: always pass the spec branch name so the agent
-  syncs to it first.
-- Agent commits carry `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- All agents work in the same checkout on the branch the architect defines for the spec
+  (`spec/SPEC-NNN-<slug>`), one agent at a time, each committing only its own files.
+- Agents cannot spawn agents; the main session orchestrates them through `/spec`.
 
 ## Gate baseline (`dev` @ 83304a4, 2026-10-15)
 

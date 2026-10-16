@@ -32,8 +32,11 @@ Writing a spec (`/spec new`):
    code with `codegraph_explore` and confirm the defect still exists. Update the
    finding's *Verification* to `Confirmed` with what you checked, or record that
    it no longer reproduces and stop.
-2. Copy `docs/specs/TEMPLATE.md` to `docs/specs/SPEC-NNN-<slug>.md` with the
-   next free id. Record the base: `dev` @ current short SHA.
+2. Define the branch every agent will work on: `spec/SPEC-NNN-<slug>` (next
+   free id), created from an up-to-date `dev`
+   (`git switch dev && git pull --ff-only && git switch -c spec/SPEC-NNN-<slug>`).
+   Copy `docs/specs/TEMPLATE.md` to `docs/specs/SPEC-NNN-<slug>.md` on that
+   branch and record *Branch* and *Base* (`dev` @ short SHA).
 3. Requirements describe behavior, not implementation. Non-goals are explicit.
 4. Contracts: fill every row (or `None`). These are the cross-domain seams:
    - API models in `backend/app/models/{requests,responses}/` ↔ frontend calls
@@ -57,10 +60,12 @@ Writing a spec (`/spec new`):
    `docs/development/` → ci-engineer) when behavior they describe changes.
 7. Put anything you could not decide in *Open questions* rather than guessing.
 8. Add the spec to the index table in `docs/specs/README.md`.
+9. Commit only your files: `docs(SPEC-NNN): draft spec`.
 
 Amending a spec (deviation reported by an engineer or QA): change the spec,
 add a dated *Changelog* line saying what changed and why, and flag whether it
-alters requirements or contracts (that needs user re-approval).
+alters requirements or contracts (that needs user re-approval). Commit it on the
+spec branch (`docs(SPEC-NNN): amend spec`).
 
 Standards:
 
