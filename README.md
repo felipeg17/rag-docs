@@ -71,7 +71,7 @@ Key environment variables:
 | `VECTOR_DB_TYPE` | `chroma`/`pgvector` | Vector database backend                |
 | `USE_SECRETS`    | `true`/`false`      | Load API keys from GCP Secret Manager  |
 
-See [SETUP.md](docs/SETUP.md) for complete variable reference.
+See [setup.md](docs/guides/setup.md) for complete variable reference.
 
 ## Project Structure
 
@@ -84,17 +84,18 @@ rag-docs/
 │   └── pyproject.toml
 ├── frontend/             # Streamlit UI
 ├── k8s/                  # Kubernetes manifests and Skaffold
-├── docs/                 # Technical documentation
+├── docs/                 # Documentation (see docs/README.md)
 └── CLAUDE.md             # Developer guide
 ```
 
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md) — Comprehensive project guide (for Claude Code)
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — System design and component details
-- [docs/SETUP.md](docs/SETUP.md) — Detailed setup and configuration
-- [docs/TESTING.md](docs/TESTING.md) — Testing strategies and examples
-- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — How to contribute
+- [docs/reference/architecture.md](docs/reference/architecture.md) — System design and component details
+- [docs/guides/setup.md](docs/guides/setup.md) — Detailed setup and configuration
+- [docs/development/testing.md](docs/development/testing.md) — Testing strategies and examples
+- [docs/development/contributing.md](docs/development/contributing.md) — How to contribute
+- [docs/findings/](docs/findings/README.md) — Tracked defects and improvements
 - [backend/README.md](backend/README.md) — Backend-specific guide
 - [frontend/README.md](frontend/README.md) — Frontend-specific guide
 - [k8s/README.md](k8s/README.md) — Kubernetes deployment

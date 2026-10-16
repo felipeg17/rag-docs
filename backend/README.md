@@ -213,7 +213,7 @@ DATABASE_URL=postgresql://user:pass@localhost/ragdocs
 USE_SECRETS=false
 ```
 
-See `../docs/SETUP.md` for full configuration reference.
+See `../docs/guides/setup.md` for full configuration reference.
 
 ## Testing
 
@@ -239,7 +239,7 @@ ruff format app
 mypy app
 ```
 
-See `../docs/TESTING.md` for detailed testing guide.
+See `../docs/development/testing.md` for detailed testing guide.
 
 ## Database Migrations
 
@@ -267,7 +267,7 @@ Migrations are auto-generated from SQLAlchemy models. Always review before apply
 - **DocumentService**: Document registry and deduplication
 - **InteractionService**: Interaction logging for analytics
 
-See `../docs/ARCHITECTURE.md` for detailed service descriptions.
+See `../docs/reference/architecture.md` for detailed service descriptions.
 
 ## Vector Database
 

@@ -170,4 +170,4 @@ Integration tests run only on `main` branch or with `integration-tests` label in
 
 ## Kubernetes Deployment
 
-See [k8s/README.md](../k8s/README.md) for Kubernetes setup with Skaffold or kubectl.
+See [k8s/README.md](../../k8s/README.md) for Kubernetes setup with Skaffold or kubectl.
