@@ -34,7 +34,7 @@ List every interface this spec changes. Write `None` if a category is untouched.
 |---|---|---|---|
 | API models (`backend/app/models/`) | | | |
 | HTTP routes / status codes | | | |
-| `Settings` ↔ configmaps ↔ `backend.env.template` | | | |
+| `Settings` ↔ configmaps | | | |
 | DB schema / Alembic migration | | | |
 | Vector DB metadata / collection / table | | | |
 | Prompts (`backend/app/prompts/`) | | | |

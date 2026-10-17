@@ -38,7 +38,7 @@ Tracked improvement opportunities and defects. Each finding is one file so it ca
 | [F-017](F-017-secrets-handling.md) | Secrets and credentials handling | Medium | security | Open | — |
 | [F-018](F-018-dependency-hygiene.md) | Undeclared, unused and unpinned dependencies | Medium | dependencies | Open | — |
 | [F-019](F-019-dead-host-port-settings.md) | Host/port settings are never used | Low | config | Open | — |
-| [F-020](F-020-pgvector-port-host-mismatch.md) | PGVector port/host mismatch between env template and k8s | Low | config | Open | — |
+| [F-020](F-020-pgvector-port-host-mismatch.md) | PGVector port/host default differs from the k8s configmaps | Low | config | Open | — |
 | [F-021](F-021-duplicate-tracing-vars.md) | Duplicate LangChain/LangSmith tracing variables | Low | config | Open | — |
 | [F-022](F-022-configmaps-out-of-sync.md) | Configmaps out of sync with Settings | Low | config | Open | — |
 | [F-023](F-023-mislabelled-path-params.md) | `document_id` path param is actually a title; Location header points nowhere | Low | api | Open | — |
@@ -46,11 +46,12 @@ Tracked improvement opportunities and defects. Each finding is one file so it ca
 | [F-025](F-025-deprecated-langchain-usage.md) | Deprecated LangChain APIs; chains rebuilt per request | Low | maintenance | Open | #16 (related) |
 | [F-026](F-026-docker-hygiene.md) | Docker image hygiene and Python 3.10 EOL | Low | infrastructure | Open | — |
 | [F-027](F-027-k8s-resources-availability.md) | K8s resource requests, replicas and frontend probes | Low | infrastructure | Open | — |
-| [F-028](F-028-frontend-requests.md) | Frontend HTTP calls: no URL encoding, timeout or error handling | Low | frontend | Open | — |
-| [F-029](F-029-frontend-ux-security.md) | Frontend UX and security settings | Low | frontend | Open | — |
+| [F-028](F-028-frontend-requests.md) | Frontend HTTP calls: no URL encoding, timeout or error handling | Low | frontend | Fixed (SPEC-002) | — |
+| [F-029](F-029-frontend-ux-security.md) | Frontend UX and security settings | Low | frontend | Fixed (SPEC-002) | — |
 | [F-030](F-030-misnamed-init-file.md) | `__initi__.py` typo in repositories package | Low | maintenance | Open | — |
 | [F-031](F-031-search-score-is-unbounded-distance.md) | `/search` score is a distance but the model requires similarity in [0, 1] (500s) | Medium | correctness | Fixed (SPEC-001) | — |
 | [F-032](F-032-pdb-breakpoints-in-admin-chroma.md) | Leftover `pdb` breakpoints in `backend/admin_chroma.py` | Low | maintenance | Open | — |
+| [F-033](F-033-no-document-list.md) | No way to list uploaded documents (UI title is free text) | Low | api | Open | — |
 
 ## Audits
 
@@ -66,6 +67,8 @@ Tracked improvement opportunities and defects. Each finding is one file so it ca
 | Default configmap (OpenAI) | `gpt-4.1-nano` | `text-embedding-ada-002` | Chroma |
 | `USE_VERTEX_AI=true` | `gemini-2.5-flash` | `text-embedding-ada-002` (see F-006) | Chroma |
 | `backend.env.template` | OpenAI | `text-embedding-ada-002` | pgvector |
+
+`backend.env.template` (and `docker-compose.yaml`) were removed by SPEC-002 on 2026-10-17; the row above is the audit-time snapshot.
 
 Retrieval defaults: chunk 800 / overlap 50 chars, k=4, Cohere `rerank-v3.5` top_n=3, temperature 0.05, top_p 0.1.
 

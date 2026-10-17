@@ -49,8 +49,8 @@ Defined in `.claude/agents/`. Ownership is exclusive: an agent edits only its pa
 |---|---|---|
 | `architect` | opus | spec branch, `docs/specs/`, `docs/findings/`, `docs/reference/`, `docs/README.md`, root `README.md` and `CLAUDE.md` |
 | `backend-agent` | sonnet | `backend/` (except `Dockerfile`, `tests/behave/`) |
-| `frontend-agent` | sonnet | `frontend/` (except `Dockerfile`) |
-| `k8s-agent` | sonnet | `k8s/`, `skaffold.yaml`, `docker-compose.yaml`, all `Dockerfile`s, `*.env.template`, `docs/guides/` |
+| `frontend-agent` | sonnet | `frontend/` (except `Dockerfile`, `.dockerignore`, `nginx/`) |
+| `k8s-agent` | sonnet | `k8s/`, `skaffold.yaml`, all `Dockerfile`s, `frontend/.dockerignore`, `frontend/nginx/`, `docs/guides/` |
 | `ci-agent` | sonnet | `.github/`, `docs/development/` |
 | `qa-agent` | sonnet | `backend/tests/behave/`, spec *Verification*, finding *Status* |
 
@@ -64,3 +64,4 @@ agents: orchestration lives in the `/spec` skill.
 | ID | Title | Status | Findings | Branch |
 |---|---|---|---|---|
 | [SPEC-001](SPEC-001-scope-retrieval-to-document.md) | Scope retrieval to the requested document and return true similarity scores | Done | F-001, F-031 | `spec/SPEC-001-scope-retrieval-to-document` |
+| [SPEC-002](SPEC-002-web-frontend.md) | Replace the Streamlit frontend with a Vite + React web UI | Done | F-028, F-029 | `spec/SPEC-002-web-frontend` |

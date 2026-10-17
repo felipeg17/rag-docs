@@ -10,14 +10,16 @@ The backend provides REST APIs for:
 - **Question answering**: Retrieve relevant chunks and generate answers via LLM
 - **Reranking**: Retrieve → rerank with Cohere → answer (alternative strategy)
 
+After changing an API model or route, regenerate the OpenAPI snapshot with `uv run python export_openapi.py` (in `backend/`), then `npm run gen:api` (in `frontend/`).
+
 ## Quick Start
 
-### Docker
+### Kubernetes (full stack)
+
+From the repo root (Kubernetes via Skaffold is the only supported way to run the full stack):
 
 ```bash
-cp image.env.template image.env
-# Edit image.env and set BACKEND_IMAGE_NAME and IMAGE_TAG
-docker compose --env-file image.env --profile backend up --build
+skaffold dev -p local,chroma -f skaffold.yaml --port-forward
 ```
 
 Backend runs at `http://localhost:8106`.
@@ -28,9 +30,6 @@ Backend runs at `http://localhost:8106`.
 python -m venv .venv
 source .venv/bin/activate
 uv pip install -e .
-cp backend.env.template backend.env
-
-# Edit backend.env with your configuration
 
 # Initialize databases (if using ChromaDB)
 python admin_chroma.py
@@ -38,9 +37,13 @@ python admin_chroma.py
 # Or run migrations (if using PGVector)
 alembic upgrade head
 
-# Start server
-uvicorn main:app --reload --host 0.0.0.0 --port 8106
+# Start server (overrides are plain env vars)
+LOCAL_LLM=true VECTOR_DB_TYPE=chroma uvicorn main:app --reload --host 0.0.0.0 --port 8106
 ```
+
+There is no env file: `Settings` (`app/core/config.py`) reads process environment variables only
+and falls back to code defaults. Export overrides in the shell. Reference values live in
+`../k8s/base/backend/configmap.yaml` and `configmap-local.yaml`.
 
 Server runs at `http://localhost:8106`.
 
@@ -192,26 +195,44 @@ backend/
 
 ## Configuration
 
-Copy `backend.env.template` to `backend.env` and configure:
+Configuration comes from process environment variables, with defaults in `app/core/config.py`
+(no env file is loaded). Reference values: `../k8s/base/backend/configmap.yaml` and
+`configmap-local.yaml`. Main variables:
 
 ```bash
 # LLM Provider
 LOCAL_LLM=true                              # true=Ollama, false=cloud
-OLLAMA_BASE_URL=http://ollama:11434
+USE_VERTEX_AI=false                         # cloud: Vertex AI instead of OpenAI
+OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen3:8b
 OLLAMA_EMBEDDINGS_MODEL=nomic-embed-text-v2-moe
 
 # Vector Database
 VECTOR_DB_TYPE=chroma                       # chroma or pgvector
-CHROMA_HOST=chroma
-CHROMA_PORT=8000
+CHROMADB_HOST=localhost
+CHROMADB_PORT=8000
 
-# Database
-DATABASE_URL=postgresql://user:pass@localhost/ragdocs
+# PGVector / app database
+PGVECTOR_HOST=localhost
+PGVECTOR_PORT=6024
+PGVECTOR_USER=langchain
+PGVECTOR_PASSWORD=langchain
+PGVECTOR_DATABASE=langchain
 
 # Secrets
-USE_SECRETS=false
+USE_SECRETS=false                           # false: read keys from env vars (below)
+OPENAI_API_KEY=...                          # cloud (non-Vertex) LLM and embeddings
+COHERE_API_KEY=...                          # required for strategy=rerank
+PROJECT_ID=...                              # only with USE_SECRETS=true outside GCP
 ```
+
+Secrets are resolved by `get_secret()` in `app/core/helpers.py` (used by `openai_api_key` and
+`cohere_api_key` in `Settings`). With `USE_SECRETS=false` (default) the keys come from
+`OPENAI_API_KEY` / `COHERE_API_KEY`; a missing key resolves to an empty string. With
+`USE_SECRETS=true` they are read from GCP Secret Manager (`openai-api-key`, `cohere-api-key`)
+in the project returned by the GCP metadata server, or `PROJECT_ID` when not running on GCP;
+if the lookup fails with a non-Google API error, it falls back to the env var. The `rerank`
+strategy needs a real `COHERE_API_KEY`.
 
 See `../docs/guides/setup.md` for full configuration reference.
 
