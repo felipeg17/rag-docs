@@ -15,6 +15,10 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   detect-changes:
     name: Detect changed components
@@ -37,6 +41,7 @@ jobs:
               - 'backend/**'
             frontend:
               - 'frontend/**'
+              - 'backend/openapi.json'
 
   check-format-backend:
     name: Check backend code formatting
@@ -67,34 +72,44 @@ jobs:
         working-directory: ./backend
         run: uv run ruff format --check .
 
-  check-format-frontend:
-    name: Check frontend code formatting
+  frontend-checks:
+    name: Check frontend (API types, lint, types, tests, build)
     runs-on: ubuntu-latest
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.frontend_changed == 'true' }}
+
+    defaults:
+      run:
+        working-directory: ./frontend
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          enable-cache: true
-          cache-dependency-glob: "frontend/uv.lock"
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: uv sync --all-extras
+        run: npm ci
 
-      - name: Check frontend formatting with ruff
-        working-directory: ./frontend
-        run: uv run ruff format --check .
+      - name: Check generated API types match backend/openapi.json
+        run: npm run check:api
+
+      - name: Lint and format check with Biome
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run frontend unit tests
+        run: npm test
+
+      - name: Build frontend
+        run: npm run build
 
   check-backend-typing:
     name: Check backend type hints
