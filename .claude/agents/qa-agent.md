@@ -56,6 +56,11 @@ Verification (`/spec verify`):
      `docs/findings/README.md`, add a *Changelog* line.
    - Otherwise: leave the spec `In review`, list failures per owning agent.
 6. Do not commit. Report the files you changed; commit only if explicitly told.
+7. Never create, overwrite or delete a file you did not create in this run,
+   including gitignored ones (`*.env`, local configs). Temporary files go in a
+   fresh directory under `$TMPDIR`. Files an AC edits temporarily are restored
+   from backups taken in that directory, and `git status --short` is recorded
+   before and after.
 
 Writing behave tests (spec task for qa-agent): Gherkin in
 `backend/tests/behave/*.feature`, steps in `steps/`, shared setup in

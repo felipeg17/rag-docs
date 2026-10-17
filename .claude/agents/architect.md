@@ -42,8 +42,7 @@ Writing a spec (`/spec new`):
    - API models in `backend/app/models/{requests,responses}/` ↔ frontend calls
      in `frontend/components/`.
    - `Settings` in `backend/app/core/config.py` ↔
-     `k8s/base/backend/configmap.yaml`, `configmap-local.yaml` and
-     `backend/backend.env.template`.
+     `k8s/base/backend/configmap.yaml` and `configmap-local.yaml`.
    - SQLAlchemy models in `backend/app/infrastructure/database/models.py` ↔
      Alembic migrations in `backend/app/migrations/versions/`.
    - Vector store metadata (chunk keys such as `titulo`, `tipo_documento`) and

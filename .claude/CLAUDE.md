@@ -21,7 +21,7 @@ Product changes go through specs: `docs/specs/README.md` (lifecycle, ownership),
 | `architect` | opus | specs and their branches, findings triage, `docs/reference/` |
 | `backend-agent` | sonnet | `backend/` |
 | `frontend-agent` | sonnet | `frontend/` |
-| `k8s-agent` | sonnet | `k8s/`, Skaffold, Dockerfiles, docker-compose, env templates, `docs/guides/` |
+| `k8s-agent` | sonnet | `k8s/`, Skaffold, Dockerfiles, `frontend/nginx/`, `docs/guides/` |
 | `ci-agent` | sonnet | `.github/`, `docs/development/` |
 | `qa-agent` | sonnet | AC verification, behave suite, closes specs |
 
@@ -30,13 +30,16 @@ Product changes go through specs: `docs/specs/README.md` (lifecycle, ownership),
 - Nobody commits (agents or main session) unless the user explicitly says so.
 - Agents cannot spawn agents; the main session orchestrates them through `/spec`.
 
-## Gate baseline (`dev` @ 83304a4, 2026-10-15)
+## Gate baseline (`dev` @ 83304a4, 2026-10-15; frontend and backend counts updated by SPEC-002, 2026-10-16)
 
 Pre-existing errors. Gates fail only on errors beyond these; remove an entry when it is fixed.
 
 - Backend `ruff check app tests`: E501 `tests/behave/steps/document_qa_steps.py:52`, F841
   `tests/unit/services/persistence/document_service_test.py:155`. `ruff format --check`, `mypy app`
-  clean; `pytest tests/unit`: 130 passed.
-- Frontend `ruff check .`: I001 `components/__init__.py:1`. `mypy .` clean.
+  clean; `pytest tests/unit`: 155 passed (includes the OpenAPI snapshot test). After an API model or
+  route change: `uv run python export_openapi.py` (from `backend/`), then `npm run gen:api` in
+  `frontend/`.
+- Frontend (from `frontend/`, after `npm ci`): `npm run check:api`, `npm run lint`,
+  `npm run typecheck`, `npm test` (90 passed), `npm run build`: all clean.
 - `uvx yamllint -d relaxed k8s skaffold.yaml` and `uvx --from actionlint-py actionlint`: clean.
 - `skaffold render` needs a running minikube.
