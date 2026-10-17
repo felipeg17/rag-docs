@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-config
+# Read by nginx (envsubst) at container start; a change needs a pod restart.
 data:
   API_HOST: "rag-docs-backend"
   API_PORT: "8106"

@@ -3,13 +3,29 @@
 ## Prerequisites
 
 - Python >=3.10.12,<3.11
-- Docker and Docker Compose (for containerized setup)
+- Docker, minikube, kubectl and Skaffold (Kubernetes is the only way to run the full stack)
 - `uv` package manager (for local development)
-- PostgreSQL 13+ (for PGVector backend, or pgvector service in Docker)
+- Node 24 and npm (for frontend development)
+- PostgreSQL 13+ (for PGVector backend, or the pgvector service in Kubernetes)
 
 ## Environment Setup
 
-Each component has its own `.env.template` file (e.g., `backend/backend.env.template`, `frontend/frontend.env.template`) listing the most important environment variables.
+No env files are used. In Kubernetes the backend variables come from `k8s/base/backend/configmap.yaml`
+(and `configmap-local.yaml` for the `local` profile), and secrets from the `api-keys` Secret. The
+sources of truth for variable names and defaults are those configmaps and
+`backend/app/core/config.py` (`Settings`).
+
+To run the backend bare (uvicorn), note that `Settings` reads only process environment variables,
+with code defaults from `backend/app/core/config.py`; no env file is loaded. Export any overrides in
+the shell before starting it.
+
+Quick start (from the repo root, with minikube running):
+
+```bash
+skaffold dev -p local,chroma -f skaffold.yaml --port-forward
+```
+
+Frontend: http://localhost:8502. Backend: http://localhost:8106.
 
 ### Backend Configuration
 
@@ -74,12 +90,17 @@ PROJECT_ID=your-gcp-project-id
 
 When `USE_SECRETS=false`, the app reads `OPENAI_API_KEY` and `COHERE_API_KEY` from environment variables. When `true`, it fetches them from GCP Secret Manager using `PROJECT_ID` to locate the project.
 
-### Frontend Configuration (frontend.env)
+### Frontend Configuration
 
-```bash
-API_HOST=localhost
-API_PORT=8106
-```
+The frontend has no env file. It takes two variables, `API_HOST` and `API_PORT`, set per environment:
+
+- Kubernetes: `k8s/base/frontend/configmap.yaml` (`rag-docs-backend`, `8106`).
+- Vite dev server (`npm run dev`): `API_PROXY_TARGET` (default `http://localhost:8106`).
+
+The browser only talks to the frontend origin. nginx proxies `/api/v1/*` and `/api/health` to
+`http://API_HOST:API_PORT`. These variables are read once, when the container starts (nginx
+envsubst), so changing them needs a restart. nginx resolves the host at start: if `API_HOST`
+cannot be resolved, the container exits.
 
 ## Local Development
 
@@ -120,13 +141,19 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8106
 
 ```bash
 cd frontend
-python -m venv .venv
-source .venv/bin/activate
-uv pip install -e .
-streamlit run front.py
+npm ci
+npm run dev
 ```
 
-Frontend runs at http://localhost:8501.
+The Vite dev server proxies `/api/v1` and `/api/health` to `http://localhost:8106`. To use another
+backend (for example a port-forward on a different port), set the target:
+
+```bash
+API_PROXY_TARGET=http://localhost:9000 npm run dev
+```
+
+Frontend runs at http://localhost:5173 in dev. In Kubernetes (Skaffold) it is
+served by nginx at http://localhost:8502.
 
 ## Database Migrations (Alembic)
 
