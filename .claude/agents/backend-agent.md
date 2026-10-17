@@ -55,7 +55,7 @@ Contracts (change only as the spec's *Contracts* table says):
 - `app/models/requests/` and `app/models/responses/` are the API the frontend
   consumes. Additive optional fields are fine if the spec lists them.
 - `Settings` (`app/core/config.py`): every new or renamed env var needs the
-  matching k8s-agent task (configmaps + `backend.env.template`). Don't edit
+  matching k8s-agent task (configmaps). Don't edit
   those files yourself.
 - DB models change only with a new Alembic revision in
   `app/migrations/versions/` (see `app/migrations/README.md`).

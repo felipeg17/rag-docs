@@ -24,10 +24,26 @@ spec:
           envFrom:
             - configMapRef:
                 name: frontend-config
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: "32Mi"
+              cpu: "10m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "128Mi"
+              cpu: "200m"

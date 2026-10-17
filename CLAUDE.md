@@ -2,12 +2,17 @@
 
 RAG-Docs: FastAPI backend for PDF ingestion + Retrieval-Augmented Generation.
 Chunks PDFs, stores embeddings (ChromaDB or PGVector), and answers questions via LLM.
+A web UI uploads PDFs and asks questions about them.
 
 ## Stack
 
 - **Backend**: Python 3.10, FastAPI, LangChain, ChromaDB/PGVector, PostgreSQL, Alembic
-- **Frontend**: Streamlit (`frontend/front.py`) — PDF upload + chatbot pages
-- **Package manager**: `uv` (separate `pyproject.toml` in `backend/` and `frontend/`)
+- **Frontend**: Vite + React 19 + TypeScript (strict), CSS modules, Biome, vitest (`frontend/src/`).
+  Two views, Upload and Ask; UI copy is Spanish. Served by nginx-unprivileged on port 8502,
+  which proxies `/api` to the backend same-origin (`frontend/nginx/default.conf.template`)
+- **API types**: generated from the backend's committed `backend/openapi.json` into
+  `frontend/src/api/openapi_gen.ts` (never hand-edited)
+- **Package managers**: `uv` in `backend/`, npm in `frontend/` (Node 24)
 - **Deployment**: Kubernetes via Skaffold + minikube
 
 ## Architecture
@@ -44,19 +49,33 @@ Endpoint handler
 | POST | `/api/v1/documents/{document_id}/search` | Similarity search |
 | POST | `/api/v1/documents/{document_id}/ask` | Q&A (`strategy`: `standard` or `rerank`) |
 
+The web UI calls these same-origin through its nginx (or the Vite dev proxy): `/api/v1/*` as is,
+`/health` as `/api/health`. See `docs/reference/architecture.md` § Frontend.
+
 ## Configuration
 
-Each component has its own `.env` file (`backend/backend.env`, `frontend/frontend.env`) — copy from the `.env.template`. 
+There are no env files. Kubernetes (Skaffold + minikube) is the only way to run the stack.
+
+- **Backend**: process environment variables, else the defaults in `backend/app/core/config.py` (no `env_file`).
+  In Kubernetes they come from the `backend-config` configmap (`k8s/base/backend/configmap.yaml`;
+  `configmap-local.yaml` with the `local` profile) and the `api-keys` secret (`OPENAI_API_KEY`, `COHERE_API_KEY`).
+- **Frontend**: the nginx upstream (`API_HOST`, `API_PORT`) comes from `k8s/base/frontend/configmap.yaml`;
+  `npm run dev` proxies to `API_PROXY_TARGET` (default `http://localhost:8106`).
+
 See `docs/guides/setup.md` for all variables and LLM/vector DB options.
 
 ## Common Commands
 
 ```bash
-# Tests
+# Backend (in backend/)
 pytest tests/unit -v
-
-# Lint / type check
 ruff check app && ruff format app && mypy app
+uv run python export_openapi.py   # after an API model change: regenerate openapi.json
+
+# Frontend (in frontend/, after npm ci)
+npm run dev                       # :5173, proxies /api to http://localhost:8106
+npm run gen:api                   # after export_openapi.py: regenerate src/api/openapi_gen.ts
+npm run check:api && npm run lint && npm run typecheck && npm test && npm run build
 
 # Deploy (from repo root)
 skaffold dev --profile local,ollama -f skaffold.yaml

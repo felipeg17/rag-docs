@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --border: #e4e4e7;
+  --border-strong: #a1a1aa; /* inputs: 3:1 against --surface */
+
+  /* Text */
+  --text: #18181b;
+  --text-muted: #52525b;
+  --text-on-accent: #ffffff;
+
+  /* Interaction */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef2ff;
+  --focus: #4f46e5;
+
+  /* Status: always paired with text or an icon, never colour alone */
+  --ok: #15803d;
+  --ok-soft: #f0fdf4;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+
+  /* Type */
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --text-xs: 0.75rem; /* 12 meta */
+  --text-sm: 0.875rem; /* 14 secondary, labels */
+  --text-md: 1rem; /* 16 body, inputs (16 avoids iOS zoom) */
+  --text-lg: 1.25rem; /* 20 section titles */
+  --text-xl: 1.5rem; /* 24 page title */
+  --leading: 1.55;
+
+  /* Space: 4 px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Shape */
+  --radius-sm: 6px; /* inputs, buttons */
+  --radius-md: 10px; /* cards, messages */
+  --radius-pill: 999px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.05); /* the only shadow; for floating composer */
+
+  /* Layout */
+  --content-max: 760px; /* reading width */
+  --shell-max: 1120px;
+  --header-h: 56px;
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 160ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b0e;
+    --surface: #18181b;
+    --surface-2: #232328;
+    --border: #2e2e33;
+    --border-strong: #71717a;
+    --text: #fafafa;
+    --text-muted: #a1a1aa;
+    --text-on-accent: #0b0b0e;
+    --accent: #818cf8;
+    --accent-hover: #a5b4fc;
+    --accent-soft: #1e1b4b;
+    --focus: #a5b4fc;
+    --ok: #4ade80;
+    --ok-soft: #052e16;
+    --warn: #fbbf24;
+    --warn-soft: #2a1a03;
+    --danger: #f87171;
+    --danger-soft: #2a0b0b;
+    --shadow-1: none;
+  }
+}

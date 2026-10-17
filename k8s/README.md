@@ -60,3 +60,14 @@ Alternatively, if it's required to build the containers each time add the `--cac
    ```
 
 **Note:** Forwarding the ports will allow to access the services from the host machine.
+
+## Frontend
+
+The frontend is a static Vite build served by `nginxinc/nginx-unprivileged` (UID 101) on port 8502.
+It proxies `/api/v1/*` and `/api/health` to the backend using `API_HOST` and `API_PORT` from
+`k8s/base/frontend/configmap.yaml`. nginx reads them at pod start and resolves the host then, so
+the backend Service must exist (Skaffold applies all manifests together). A changed value needs a
+pod restart (`kubectl rollout restart deploy/rag-docs-frontend`).
+
+With `--port-forward` the app is at http://localhost:8502. Readiness and liveness probes use
+`GET /`, which is static and does not depend on the backend.

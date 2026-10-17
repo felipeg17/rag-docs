@@ -1,0 +1,528 @@
+{
+  "components": {
+    "schemas": {
+      "DocumentIngestRequest": {
+        "properties": {
+          "document_content": {
+            "description": "Base64-encoded document content",
+            "title": "Document Content",
+            "type": "string"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "documento-pdf",
+            "description": "Document type (pdf, csv, etc)",
+            "title": "Document Type"
+          },
+          "title": {
+            "description": "Document title, must be unique",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "document_content"
+        ],
+        "title": "DocumentIngestRequest",
+        "type": "object"
+      },
+      "DocumentIngestResponse": {
+        "properties": {
+          "document_id": {
+            "description": "Unique document identifier",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "message": {
+            "description": "Status message",
+            "title": "Message",
+            "type": "string"
+          },
+          "status": {
+            "description": "Creation status",
+            "enum": [
+              "created",
+              "updated"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "description": "Document title",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "title",
+          "status",
+          "message"
+        ],
+        "title": "DocumentIngestResponse",
+        "type": "object"
+      },
+      "DocumentSearchRequest": {
+        "properties": {
+          "k_results": {
+            "default": 4,
+            "description": "Number of results",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "K Results",
+            "type": "integer"
+          },
+          "metadata_filter": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "Optional metadata filters, AND-ed with the document scope",
+            "title": "Metadata Filter",
+            "type": "object"
+          },
+          "query": {
+            "description": "Search query",
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "DocumentSearchRequest",
+        "type": "object"
+      },
+      "DocumentSearchResponse": {
+        "properties": {
+          "query": {
+            "description": "Original search query",
+            "title": "Query",
+            "type": "string"
+          },
+          "results": {
+            "description": "Search results",
+            "items": {
+              "$ref": "#/components/schemas/SearchResultItem"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "total_results": {
+            "description": "Total number of results returned",
+            "title": "Total Results",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query",
+          "results",
+          "total_results"
+        ],
+        "title": "DocumentSearchResponse",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "QuestionAnswerResponse": {
+        "properties": {
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Generated answer (error 404 if document not found)",
+            "title": "Answer"
+          },
+          "document_id": {
+            "description": "Document that was queried",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "question": {
+            "description": "Original question",
+            "title": "Question",
+            "type": "string"
+          },
+          "source_documents": {
+            "description": "Source documents used for the answer",
+            "items": {
+              "$ref": "#/components/schemas/SourceDocument"
+            },
+            "title": "Source Documents",
+            "type": "array"
+          },
+          "strategy": {
+            "description": "Strategy used",
+            "enum": [
+              "standard",
+              "rerank"
+            ],
+            "title": "Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "answer",
+          "document_id",
+          "strategy"
+        ],
+        "title": "QuestionAnswerResponse",
+        "type": "object"
+      },
+      "QuestionRequest": {
+        "properties": {
+          "k_results": {
+            "default": 4,
+            "description": "Number of chunks to retrieve",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "K Results",
+            "type": "integer"
+          },
+          "metadata_filter": {
+            "additionalProperties": true,
+            "default": {},
+            "description": "Optional metadata filters, AND-ed with the document scope",
+            "title": "Metadata Filter",
+            "type": "object"
+          },
+          "question": {
+            "description": "Question to ask",
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "strategy": {
+            "default": "standard",
+            "description": "QA strategy: 'standard' or 'rerank'",
+            "enum": [
+              "standard",
+              "rerank"
+            ],
+            "title": "Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "QuestionRequest",
+        "type": "object"
+      },
+      "SearchResultItem": {
+        "properties": {
+          "content": {
+            "description": "Text content of the chunk",
+            "title": "Content",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "description": "Chunk metadata (page, source, etc.)",
+            "title": "Metadata",
+            "type": "object"
+          },
+          "score": {
+            "description": "Similarity score",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "content",
+          "score",
+          "metadata"
+        ],
+        "title": "SearchResultItem",
+        "type": "object"
+      },
+      "SourceDocument": {
+        "properties": {
+          "metadata": {
+            "additionalProperties": true,
+            "description": "Metadata (page number, etc.)",
+            "title": "Metadata",
+            "type": "object"
+          },
+          "page_content": {
+            "description": "Content of the source chunk",
+            "title": "Page Content",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Relevance score (if available)",
+            "title": "Score"
+          }
+        },
+        "required": [
+          "page_content",
+          "metadata"
+        ],
+        "title": "SourceDocument",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "docs-rag-ms",
+    "version": "0.0.2"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/documents": {
+      "post": {
+        "operationId": "ingest_document_api_v1_documents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentIngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Document already exists (updated)"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentIngestResponse"
+                }
+              }
+            },
+            "description": "Document created successfully"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Ingest Document",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/ask": {
+      "post": {
+        "operationId": "ask_question_api_v1_documents__document_id__ask_post",
+        "parameters": [
+          {
+            "description": "Document title",
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "description": "Document title",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionAnswerResponse"
+                }
+              }
+            },
+            "description": "Question answered successfully"
+          },
+          "404": {
+            "description": "Document not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Ask Question",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/search": {
+      "post": {
+        "operationId": "search_document_api_v1_documents__document_id__search_post",
+        "parameters": [
+          {
+            "description": "Document title",
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "description": "Document title",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentSearchResponse"
+                }
+              }
+            },
+            "description": "Search completed successfully"
+          },
+          "404": {
+            "description": "Document not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "summary": "Search Document",
+        "tags": [
+          "Documents"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Check",
+        "tags": [
+          "Health"
+        ]
+      }
+    }
+  }
+}

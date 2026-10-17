@@ -10,13 +10,15 @@
 # venv
 .venv
 
+# node (frontend)
+node_modules/
+frontend/dist/
+
 
 #.env
 .env
 *.env
 
-# Allow template files for CI
-!*.env.template
 
 
 # files

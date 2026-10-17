@@ -13,12 +13,14 @@ rag-docs is designed for researchers and backend developers exploring RAG system
 - Multiple LLM providers (Ollama, OpenAI, Vertex AI)
 - Retrieval strategies: standard RAG and reranking
 - PostgreSQL persistence for documents and interactions
-- Streamlit-based frontend UI
-- Docker Compose and Kubernetes deployment options
+- Web UI (Vite + React + TypeScript, in Spanish) to upload a PDF and ask questions about it
+- Kubernetes deployment with Skaffold and minikube
 
 ## Getting Started
 
-### Kubernetes with Skaffold (Recommended)
+### Kubernetes with Skaffold
+
+Kubernetes is the only way to run the stack.
 
 Requires Minikube and Skaffold:
 
@@ -38,7 +40,7 @@ skaffold dev --profile local,ollama -f skaffold.yaml
 Access the services:
 
 - **Backend API**: http://localhost:8106
-- **Frontend**: http://localhost:8501
+- **Frontend**: http://localhost:8502 (nginx; proxies `/api` to the backend)
 - **API Docs**: http://localhost:8106/docs (Swagger UI)
 
 ## API Endpoints
@@ -62,6 +64,9 @@ rag-docs uses FastAPI dependency injection to wire LLM clients, vector databases
 
 ## Configuration
 
+The backend reads environment variables, falling back to the defaults in `backend/app/core/config.py`; there is no env file.
+In Kubernetes they come from the `backend-config` configmap (`k8s/base/backend/configmap.yaml`, or `configmap-local.yaml` with the `local` profile) and the `api-keys` secret.
+
 Key environment variables:
 
 | Variable         | Values              | Description                            |
@@ -81,8 +86,13 @@ rag-docs/
 │   ├── app/              # Source code (core, services, APIs)
 │   ├── tests/            # Unit and integration tests
 │   ├── main.py           # Entry point
+│   ├── openapi.json      # Committed API schema; the frontend's types are generated from it
 │   └── pyproject.toml
-├── frontend/             # Streamlit UI
+├── frontend/             # Web UI (Vite + React + TypeScript)
+│   ├── src/              # App, components, typed API client
+│   ├── nginx/            # nginx config: static files + same-origin /api proxy
+│   ├── Dockerfile
+│   └── package.json
 ├── k8s/                  # Kubernetes manifests and Skaffold
 ├── docs/                 # Documentation (see docs/README.md)
 └── CLAUDE.md             # Developer guide

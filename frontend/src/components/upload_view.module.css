@@ -1,0 +1,28 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.heading {
+  font-size: var(--text-xl);
+  line-height: 1.25;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.progress {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}

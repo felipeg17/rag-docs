@@ -208,6 +208,9 @@ An existing ChromaDB collection with another space (`l2` is Chroma's default whe
 
 `{document_id}` is the document title (not UUID), used for vector database filtering.
 
+The web UI reaches these through its own origin: `/api/v1/*` unchanged and `/health` as
+`/api/health` (see [Frontend](#frontend)).
+
 ### Retrieval scope
 
 `/search` and `/ask` (both strategies) retrieve only chunks whose `titulo` equals `{document_id}`. The filter comes from `build_document_filter` in `app/infrastructure/vector_db/filters.py` and has one shape, valid on both backends:
@@ -221,12 +224,98 @@ An existing ChromaDB collection with another space (`l2` is Chroma's default whe
 
 `/search` returns each result's `score` as a cosine similarity in [0, 1], higher is better: `1 − cosine distance`, clamped to [0, 1] (`cosine_distance_to_similarity` in `app/infrastructure/vector_db/scoring.py`, applied by each repository's own `similarity_search_with_relevance_scores` wrapper, not LangChain's method of the same name). Results are in non-increasing `score` order. `/ask` `source_documents` carry no score.
 
+## Frontend
+
+A single-page app in `frontend/src/` (Vite, React 19, TypeScript strict), built into static files
+and served by nginx-unprivileged. It has two views, Upload and Ask, picked by the URL hash
+(`#upload` by default, `#ask`; `frontend/src/app.tsx:12-14`). UI copy is Spanish. Uploaded titles
+(offered as suggestions in Ask) and the per-title question threads live in memory only
+(`app.tsx:22-25`); nothing is written to browser storage.
+
+### Same-origin proxy
+
+The browser talks only to the frontend's origin. The API client's base URL is `/api`
+(`frontend/src/api/client.ts:43-46`), so the bundle holds no backend host. The backend adds no
+CORS middleware (`backend/main.py`), so calling it cross-origin would not work anyway.
+
+In the image, nginx runs as UID 101 and listens on 8502
+(`frontend/nginx/default.conf.template`, `frontend/Dockerfile`):
+
+| Browser path | nginx | Template lines |
+| --- | --- | --- |
+| `/api/v1/*` | Proxied to `http://${API_HOST}:${API_PORT}`. `proxy_pass` has no URI, so the path goes upstream as the browser sent it, percent-encoding included. | 17-26 |
+| `/api/health` (exact) | Proxied to the backend's `/health` | 28-34 |
+| Any other `/api/*` | `404`, not proxied | 36-39 |
+| `/assets/*` | Hashed build output, cached `immutable`; `404` if missing | 41-45 |
+| Anything else | The file if it exists, else `index.html` (cached `no-cache`) | 47-51 |
+
+- **Upstream.** The image's envsubst step renders the template when the container starts,
+  substituting only `API_*` variables (`NGINX_ENVSUBST_FILTER=^API_` in the Dockerfile). nginx
+  resolves the host when it loads the configuration. An unresolvable `API_HOST` stops nginx with
+  `[emerg] host not found in upstream` (executed against the image on 2026-10-16). That nginx
+  does not re-resolve the name afterwards is inferred from the `ngx_http_proxy_module` docs and
+  was not tested. Values:
+  `k8s/base/frontend/configmap.yaml` (`rag-docs-backend`, `8106`; a change needs a pod restart).
+  The frontend has no env file. The Vite dev proxy targets `API_PROXY_TARGET`, default
+  `http://localhost:8106` (`frontend/vite.config.ts:5`).
+- **Limits.** `client_max_body_size 30m` covers the largest ingest body, a 20 MiB PDF in base64
+  (⌈20 MiB × 4/3⌉ = 27,962,027 bytes) plus the JSON around it. `proxy_read_timeout` and
+  `proxy_send_timeout` are `300s`, at least the client's longest timeout. The client's limits are
+  `MAX_PDF_BYTES` (20 MiB) and timeouts of 5 s (health), 300 s (ingest) and 180 s (ask)
+  (`client.ts:10-17`).
+- **Headers.** `frontend/nginx/security-headers.conf` sets `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY` and a same-origin
+  `Content-Security-Policy`. It is included per location, because nginx does not inherit
+  `add_header` into a location that sets its own.
+- **Errors.** The client turns non-2xx, timeout and network failures into an `ApiError` of kind
+  `http`, `timeout` or `network`, and logs 5xx `detail` with `console.error` (`client.ts:60-76`).
+  `errorMessage` maps each error to fixed Spanish copy (`frontend/src/api/errors.ts:23-50`). The
+  backend's `detail` is never shown.
+
+In development, `npm run dev` serves the app with a Vite proxy (`frontend/vite.config.ts`) that has
+the same two API routes, to `API_PROXY_TARGET` (default `http://localhost:8106`). The variable is
+not `VITE_`-prefixed, so it never reaches the bundle. The dev proxy has no `/api/*` 404 route.
+
+### Titles in the URL path
+
+`{document_id}` is the title, and the client encodes it with `encodeURIComponent`
+(`client.ts:110`). That covers spaces, `?`, `#` and `%`. Two kinds of title still cannot reach
+`/search` or `/ask`:
+
+- **Titles containing `/`.** uvicorn decodes the path before routing, so `%2F` becomes `/`, and
+  Starlette matches `{document_id}` with `[^/]+`.
+- **`.` and `..`.** `encodeURIComponent` leaves dots alone, and the browser's URL parser removes
+  dot segments: `/api/v1/documents/../ask` becomes `/api/v1/ask`.
+
+The UI rejects these titles before uploading or asking (`validateTitle`,
+`frontend/src/validation.ts:15-27`), along with empty titles and titles over 1000 characters
+(`documents.title VARCHAR(1000)`). The backend does not reject them: `DocumentIngestRequest.title`
+has no such constraint (`app/models/requests/document_request.py:8`), so such a title ingested
+through the API directly is stored but cannot be searched or asked. Library versions and source
+lines are in [SPEC-002](../specs/SPEC-002-web-frontend.md) § Context.
+
+### API types
+
+The frontend's request and response types are generated, never hand-written:
+
+1. `backend/export_openapi.py` writes the FastAPI app's schema to `backend/openapi.json` offline
+   (no server, database or LLM). `backend/tests/unit/openapi_snapshot_test.py` fails when the
+   committed file differs from what the app produces.
+2. `npm run gen:api` (in `frontend/`) generates `frontend/src/api/openapi_gen.ts` from it with
+   `openapi-typescript`. `npm run check:api` fails when that file is stale; CI runs it on changes
+   to `frontend/**` or `backend/openapi.json`.
+3. `frontend/src/api/types.ts` only aliases the generated schemas.
+
+The regeneration workflow is in `frontend/README.md` § Types (contract).
+
 ## Configuration Management
 
 Configuration sources, in order of precedence:
 
 1. GCP Secret Manager (if `USE_SECRETS=true`) — used for API keys (`openai-api-key`, `cohere-api-key`)
-2. Environment variables (`.env` file or system)
+2. Process environment variables. No env file is read: `Settings.model_config` sets no `env_file`
+   (`app/core/config.py:92-96`). In Kubernetes they come from the `backend-config` configmap and the
+   `api-keys` secret through `envFrom` (`k8s/base/backend/deployment.yaml:27-31`).
 3. Hardcoded defaults in `app/core/config.py`
 
 The `USE_SECRETS` env var controls whether `get_secret()` in `app/core/helpers.py` fetches from GCP Secret Manager or falls back to environment variables.
